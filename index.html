@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>D.WATSON PWD - Commission Sheets</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Times New Roman", Georgia, serif;
+    background: #eef1f4;
+    margin: 0;
+    padding: 20px;
+    color: #1a1a1a;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 0;
+  }
+  .tab-btn {
+    font-family: Arial, sans-serif;
+    font-size: 12.5px;
+    padding: 8px 12px;
+    border: 1px solid #b7c2cc;
+    border-bottom: none;
+    background: #cfd8e0;
+    color: #333;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+  }
+  .tab-btn.active {
+    background: #fff;
+    font-weight: bold;
+    color: #1a5c33;
+  }
+  .sheet {
+    background: #fff;
+    padding: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    border-radius: 0 6px 6px 6px;
+    border: 3px solid #000;
+  }
+  .sheet-inner { padding: 18px 20px 22px; }
+  h1 { text-align: center; font-size: 19px; margin: 0 0 4px 0; }
+  h2 { text-align: center; font-size: 16px; margin: 0 0 10px 0; }
+  .dates {
+    display: flex; justify-content: space-between;
+    font-size: 13px; font-weight: bold;
+    margin: 0; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 8px 20px;
+  }
+  .hdr-input {
+    border: 1px dashed transparent;
+    background: transparent;
+    font-family: inherit;
+    color: inherit;
+    text-align: center;
+    width: 100%;
+    padding: 10px 4px;
+    border-radius: 3px;
+  }
+  .hdr-input:hover, .hdr-input:focus {
+    border-color: #6b8fb5;
+    background: #fbfdff;
+    outline: none;
+  }
+  .hdr-title {
+    font-size: 19px; font-weight: bold;
+    background: #000; color: #fff;
+    letter-spacing: 0.3px;
+  }
+  .hdr-title:hover, .hdr-title:focus { background: #1a1a1a; color: #fff; border-color: #6b8fb5; }
+  .hdr-name { font-size: 16px; font-weight: bold; padding: 8px 4px; }
+  .hdr-date { font-size: 13px; font-weight: bold; text-align: left; width: auto; flex: 1; padding: 4px; }
+  .hdr-date.right { text-align: right; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 0; }
+  th, td { border: 1px solid #444; padding: 5px 6px; text-align: center; }
+  th { background: #d9d9d9; font-weight: bold; color: #000; }
+  td.item-cell, td.desc-cell { text-align: left; position: relative; }
+  .sno { color: #17458f; font-weight: bold; }
+  select, input[type="number"], input[type="text"] {
+    width: 100%; border: 1px solid #b9c2cc; border-radius: 3px; padding: 4px;
+    font-family: inherit; font-size: 12.5px; background: #fffef5;
+  }
+  input:focus { outline: 2px solid #6b8fb5; }
+  .item-cell input {
+    background: #fffef5 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="%23888" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat right 6px center;
+    background-size:14px 14px; padding-right:24px;
+  }
+  .suggest-box {
+    display: none;
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: #fff;
+    border: 1px solid #9fb3c4;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    max-height: 190px;
+    overflow-y: auto;
+    z-index: 40;
+    text-align: left;
+  }
+  .suggest-box.show { display: block; }
+  .suggest-item {
+    padding: 6px 8px;
+    font-size: 12.5px;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+    border-bottom: 1px solid #eef1f4;
+  }
+  .suggest-item:last-child { border-bottom: none; }
+  .suggest-item:hover, .suggest-item.hl { background: #e7f0f9; }
+  .suggest-item mark { background: #fff2a8; color: inherit; padding: 0; }
+  .suggest-empty { padding: 6px 8px; font-size: 12px; color: #888; font-style: italic; font-family: Arial, sans-serif; }
+  .desc-cell span { color:#555; font-style: italic; }
+  .rate-cell, .total-cell { font-weight: bold; }
+  tfoot td { font-weight: bold; }
+  .total-row td { background: #000 !important; color: #fff; font-size: 15px; padding: 8px 6px; }
+  .comm-row td { background: #bfbfbf !important; color: #000; font-size: 14px; padding: 8px 6px; text-align: left; padding-left: 16px; }
+  .comm-row td:last-of-type:not(.action-col) { text-align: center; }
+  .actions { display: flex; gap: 10px; margin: 16px 0; justify-content: center; flex-wrap: wrap; }
+  button {
+    font-family: Arial, sans-serif; font-size: 13.5px; padding: 8px 16px;
+    border-radius: 5px; border: none; cursor: pointer;
+  }
+  #addRowBtn { background: #3a6ea5; color: #fff; }
+  #addItemBtn { background: #8e5cc4; color: #fff; }
+  #printBtn { background: #2f8f4e; color: #fff; }
+  #resetBtn { background: #b5484d; color: #fff; }
+  #saveDataBtn { background: #d68910; color: #fff; }
+  #loadDataBtn { background: #566573; color: #fff; }
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    align-items: center; justify-content: center; z-index: 50;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: #fff; padding: 22px 26px; border-radius: 8px; width: 300px; box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
+  .modal-box.manage-box { width: 380px; }
+  .modal-box h3 { margin: 0 0 14px 0; font-size: 16px; font-family: Arial, sans-serif;}
+  .modal-box label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; font-family: Arial, sans-serif;}
+  .modal-box input { width: 100%; margin-bottom: 12px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-actions button { padding: 6px 14px; font-size: 13px; }
+  #saveItemBtn { background: #2f8f4e; color: #fff; white-space: nowrap; }
+  #cancelItemBtn { background: #999; color: #fff; }
+  .items-list-wrap {
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid #e2e6ea;
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-bottom: 1px solid #eef1f4;
+    font-family: Arial, sans-serif;
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-row input[type="text"] { flex: 1; margin-bottom: 0; padding: 5px; font-size: 12.5px; }
+  .item-row input[type="number"] { width: 64px; margin-bottom: 0; padding: 5px; font-size: 12.5px; }
+  .item-del-btn {
+    background: #c0392b; color: #fff; border-radius: 4px;
+    padding: 5px 9px; font-size: 12px; flex-shrink: 0;
+  }
+  .add-item-row { display: flex; gap: 6px; align-items: center; }
+  .add-item-row input[type="text"] { flex: 1; margin-bottom: 0; }
+  .add-item-row .rate-narrow { width: 70px; margin-bottom: 0; }
+  .add-item-row button { flex-shrink: 0; }
+  .items-empty { padding: 14px; text-align: center; color: #888; font-size: 12.5px; font-family: Arial, sans-serif; }
+  .rm-btn { background: #c0392b; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+  .sign { margin-top: 22px; text-align: right; font-size: 14px; }
+  .save-status {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    font-size: 12.5px;
+    color: #2f8f4e;
+    margin-top: -6px;
+    margin-bottom: 6px;
+    min-height: 16px;
+  }
+
+  @media print {
+    @page { size: A4 portrait; margin: 12mm; }
+    body { background: #fff; padding: 0; font-family: "Arial Narrow", Arial, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .wrap { max-width: 100%; }
+    .tabs { display: none; }
+    .sheet { box-shadow: none; border-radius: 0; padding: 0; border: 3px solid #000 !important; }
+    .actions { display: none; }
+    .save-status { display: none; }
+    .rm-btn { display: none; }
+    .suggest-box { display: none !important; }
+    th:last-child, td:last-child.action-col { display: none; }
+    h1, h2 { font-family: "Times New Roman", serif; }
+    table { font-family: "Arial Narrow", Arial, sans-serif; font-size: 12px; border-collapse: collapse; }
+    th, td { border: 1pt solid #000 !important; padding: 4px 6px; }
+    th { background: #d9d9d9 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sno { color: #17458f !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .total-row td { background: #000 !important; color: #fff !important; font-size: 14px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .comm-row td { background: #bfbfbf !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .hdr-title { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .dates { border-top: 2pt solid #000; border-bottom: 2pt solid #000; }
+    .item-cell input, .qtyInput, .desc-cell input {
+      border: none !important; background: transparent !important; padding: 0 !important;
+      width: 100%; font-family: inherit; font-size: 12px; -webkit-appearance: none; color: #000;
+    }
+    .hdr-input { border: none !important; }
+    .qtyInput { text-align: center; }
+    input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .sign { margin-top: 30px; padding: 0 20px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="tabs" id="tabs"></div>
+  <div class="sheet" id="sheetContainer"></div>
+  <div class="actions" style="margin-top:10px;">
+    <button id="saveDataBtn">💾 Save Data (Download)</button>
+    <button id="loadDataBtn">📂 Load Data (Upload)</button>
+    <input type="file" id="loadFileInput" accept=".json" style="display:none;">
+  </div>
+  <div class="save-status" id="saveStatus"></div>
+</div>
+
+<div class="modal-overlay" id="itemModal">
+  <div class="modal-box manage-box">
+    <h3>Items Manage Karein</h3>
+    <div id="itemsListWrap" class="items-list-wrap"></div>
+    <div class="add-item-row">
+      <input type="text" id="newItemName" placeholder="Naya item name">
+      <input type="number" id="newItemRate" placeholder="Rate" class="rate-narrow">
+      <button id="saveItemBtn">+ Add</button>
+    </div>
+    <div class="modal-actions">
+      <button id="cancelItemBtn">Band Karein</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEETS = [{"key": "Marklution", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "SHARIB", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": true, "rows": [["MARK ANKLE SUPPORT SBT 2525", 1, 50], ["MARK DOCTOR COAT", 7, 50], ["MARK KNEE BRACE SPORT CARE SHUTENG NO 81440", 1, 50], ["MARK KNEE SUPPORT", 1, 50], ["MARK KNEE SUPPORT BLUE OCEAN KK-333", 10, 50], ["MARK KNEE SUPPORT BO-222 BLUE OCEAN", 1, 50], ["MARK KNEE SUPPORT HOTIK HT 888", 7, 50], ["MARK KNEE SUPPORT ST 2549 2", 5, 50], ["MARK LAB COAT ML BA 01", 1, 50], ["MARK LUMBER SACRAL BACK SUPPORT BEST MED", 1, 50], ["MARK PALM SUPPORT HOTIK HT 998", 5, 50], ["MARK POSTURE SUPPORT SHUTENG NO 81448", 1, 50], ["MARK PREMIUM SCRUB+OT KIT", 3, 50], ["MARK SURGICAL GOWN", 1, 50], ["MARK WAIST SUPPORT HEAT X K-786", 1, 50], ["MARK WAIST TRIMMER BLUE OCEAN ST 24118", 1, 50], ["MARK WINTER SCRUB PREMIUM", 1, 50], ["SILICONE HEEL COVER LT 880", 1, 50]], "items": [["MARK ANKLE SUPPORT SBT 2525", 50], ["MARK DOCTOR COAT", 50], ["MARK KNEE BRACE SPORT CARE SHUTENG NO 81440", 50], ["MARK KNEE SUPPORT", 50], ["MARK KNEE SUPPORT BLUE OCEAN KK-333", 50], ["MARK KNEE SUPPORT BO-222 BLUE OCEAN", 50], ["MARK KNEE SUPPORT HOTIK HT 888", 50], ["MARK KNEE SUPPORT ST 2549 2", 50], ["MARK LAB COAT ML BA 01", 50], ["MARK LUMBER SACRAL BACK SUPPORT BEST MED", 50], ["MARK PALM SUPPORT HOTIK HT 998", 50], ["MARK POSTURE SUPPORT SHUTENG NO 81448", 50], ["MARK PREMIUM SCRUB+OT KIT", 50], ["MARK SURGICAL GOWN", 50], ["MARK WAIST SUPPORT HEAT X K-786", 50], ["MARK WAIST TRIMMER BLUE OCEAN ST 24118", 50], ["MARK WINTER SCRUB PREMIUM", 50], ["SILICONE HEEL COVER LT 880", 50]]}, {"key": "Ehsan", "title": "D.WATSON PWD ITEM WISE COMMISSION JULY 2026", "name": "EHSAN", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["BBA", 0, 50], ["Dexe", 11, 25], ["Elence", 1, 25], ["Elence RS =50", 1, 50], ["Kensuko", 5, 50], ["Fibre Life", 0, 30], ["Euxine Shampoo 500ml", 0, 25], ["Loreal Maybelline", 0, 30], ["Eiffel Tower Body Spray", 7, 25], ["Hair Energy", 5, 40], ["Sisyphus (RS=100)", 17, 100], ["Argan Deluxe", 9, 40], ["Romacy", 0, 50], ["Dear Body Hand Cream", 1, 25], ["Carlott", 0, 50], ["Dear Body", 0, 50], ["Mana Cosmetics", 21, 50], ["Ammore Care", 6, 40], ["Her Beauty", 2, 40], ["Mr Oral Tooth Brush", 15, 30], ["Softsub Hair Color", 4, 25], ["Softsub Hair Color (RS=70)", 4, 70], ["Body Luxuries Body Mist 250ml", 7, 50], ["Watson", 0, 70], ["Beauty Host Face Mask", 2, 25], ["Yesnow Gel Scrub 150ml", 7, 25], ["Yesnow Gel Moist Cleanser", 1, 50], ["Nuspa Anti Hair Loss Shampoo", 15, 50], ["Scenabela", 11, 50], ["Dangello", 0, 50], ["Koec", 1, 50], ["Mooyam", 2, 50], ["CN Mofaxin", 5, 50], ["Socks", 0, 25], ["KY Jelly", 2, 50], ["BUNEE FIBER HAIR", 3, 80], ["Waveparty Hair Spary", 1, 200], ["Funine Shampoo", 2, 25], ["Lonkoom prefume", 1, 100], ["yesbow moist gel", 1, 50], ["Fuxine Shampoo", 2, 50], ["Shediary", 0, 50], ["Walis B", 2, 100], ["Recare (RS=50)", 1, 50]], "items": [["BBA", 50], ["Dexe", 25], ["Elence", 25], ["Elence RS =50", 50], ["Kensuko", 50], ["Fibre Life", 30], ["Euxine Shampoo 500ml", 25], ["Loreal Maybelline", 30], ["Eiffel Tower Body Spray", 25], ["Hair Energy", 40], ["Sisyphus (RS=100)", 100], ["Argan Deluxe", 40], ["Romacy", 50], ["Dear Body Hand Cream", 25], ["Carlott", 50], ["Dear Body", 50], ["Mana Cosmetics", 50], ["Ammore Care", 40], ["Her Beauty", 40], ["Mr Oral Tooth Brush", 30], ["Softsub Hair Color", 25], ["Softsub Hair Color (RS=70)", 70], ["Body Luxuries Body Mist 250ml", 50], ["Watson", 70], ["Beauty Host Face Mask", 25], ["Yesnow Gel Scrub 150ml", 25], ["Yesnow Gel Moist Cleanser", 50], ["Nuspa Anti Hair Loss Shampoo", 50], ["Scenabela", 50], ["Dangello", 50], ["Koec", 50], ["Mooyam", 50], ["CN Mofaxin", 50], ["Socks", 25], ["KY Jelly", 50], ["BUNEE FIBER HAIR", 80], ["Waveparty Hair Spary", 200], ["Funine Shampoo", 25], ["Lonkoom prefume", 100], ["yesbow moist gel", 50], ["Fuxine Shampoo", 50], ["Shediary", 50], ["Walis B", 100], ["Recare (RS=50)", 50]]}, {"key": "Sami ", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "SAMI", "from": "FROM:26-MAY -2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["AAA Soap", 1, 20], ["Mana", 18, 50], ["Eiffel Tower", 4, 25], ["Sisyphus (RS=100)", 13, 100], ["CN Mofaxin", 4, 50], ["Dexe", 2, 25], ["Socks", 11, 25], ["Kensuko", 1, 50], ["Hair Energy", 5, 40], ["Koec", 2, 50], ["Scenabela", 4, 50], ["Watson", 1, 70], ["Ky Jelly", 2, 50], ["Shediary", 2, 50], ["Mooyam", 3, 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 8, 50], ["Euxine Shampoo 500ml", 9, 25], ["Elence", 2, 25], ["Elence (RS=50)", 8, 50], ["Ammore Care", 5, 40], ["Her Beauty", 2, 40], ["Mr Oral Tooth Brush", 6, 30], ["Fibre Life", 1, 30], ["Argan Deluxe", 14, 40], ["Soft Sub Hair Color", 1, 25], ["Yesnow Gel Scrub 150ml", 18, 25], ["Yesnow Moist Gel Juicy Peach Cleanser Mens", 2, 50], ["Body Luxuries Body Mist 250ml", 5, 50], ["Beauty Host Face Mask", 10, 25], ["Loreal Maybelline", 1, 30], ["Wali's B", 1, 100], ["Recare 25", 2, 25], ["Recare 50", 5, 50], ["Mr Oral Tooth Brush", 0, 30], ["Soft Sub Hair Color", 0, 30]], "items": [["AAA Soap", 20], ["Mana", 50], ["Eiffel Tower", 25], ["Sisyphus (RS=100)", 100], ["CN Mofaxin", 50], ["Dexe", 25], ["Socks", 25], ["Kensuko", 50], ["Hair Energy", 40], ["Koec", 50], ["Scenabela", 50], ["Watson", 70], ["Ky Jelly", 50], ["Shediary", 50], ["Mooyam", 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 50], ["Euxine Shampoo 500ml", 25], ["Elence", 25], ["Elence (RS=50)", 50], ["Ammore Care", 40], ["Her Beauty", 40], ["Mr Oral Tooth Brush", 30], ["Fibre Life", 30], ["Argan Deluxe", 40], ["Soft Sub Hair Color", 25], ["Yesnow Gel Scrub 150ml", 25], ["Yesnow Moist Gel Juicy Peach Cleanser Mens", 50], ["Body Luxuries Body Mist 250ml", 50], ["Beauty Host Face Mask", 25], ["Loreal Maybelline", 30], ["Wali's B", 100], ["Recare 25", 25], ["Recare 50", 50]]}, {"key": "USMAN", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "USMAN", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["Dear Body Hand Cream", 2, 25], ["Yesnow Moist Gel Mens Cleanser", 1, 50], ["Dexe Hair Fibre", 4, 25], ["Euxine Shampoo 500ml", 6, 25], ["Her Beauty", 5, 40], ["Socks", 1, 25], ["Makeup Pouch", 1, 50], ["Bunne Hair Fibre", 2, 80], ["Sisyphus (RS=100)", 6, 100], ["Beauty Host ", 11, 25], ["Hair Energy", 7, 40], ["Body Luxuries", 1, 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 4, 50], ["Mana", 4, 50], ["Elence", 2, 50], ["KY Jelly", 2, 50], ["Loreal Maybelline", 1, 30], ["Ammore Care", 4, 40], ["Wali,s B", 2, 100], ["Recare (RS 25)", 7, 25], ["Recare (RS 50)", 5, 50], ["Mr Oral Tooth Brush", 9, 30], ["Fibre Life", 4, 30], ["Argan Deluxe", 5, 40], ["Scenabela", 1, 50], ["Shediary", 2, 50], ["Romacy", 1, 50], ["BBA (beauty by amna)", 1, 50], ["Koec", 1, 50]], "items": [["Dear Body Hand Cream", 25], ["Yesnow Moist Gel Mens Cleanser", 50], ["Dexe Hair Fibre", 25], ["Euxine Shampoo 500ml", 25], ["Her Beauty", 40], ["Socks", 25], ["Makeup Pouch", 50], ["Bunne Hair Fibre", 80], ["Sisyphus (RS=100)", 100], ["Beauty Host ", 25], ["Hair Energy", 40], ["Body Luxuries", 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 50], ["Mana", 50], ["Elence", 50], ["KY Jelly", 50], ["Loreal Maybelline", 30], ["Ammore Care", 40], ["Wali,s B", 100], ["Recare (RS 25)", 25], ["Recare (RS 50)", 50], ["Mr Oral Tooth Brush", 30], ["Fibre Life", 30], ["Argan Deluxe", 40], ["Scenabela", 50], ["Shediary", 50], ["Romacy", 50], ["BBA (beauty by amna)", 50], ["Koec", 50]]}, {"key": "AMIR", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "AMIR", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["Argan Deluxe", 9, 40], ["Makeup Pouch", 1, 50], ["Ammore Care", 2, 40], ["Fibre Life", 2, 30], ["Mana", 2, 50], ["Beauty Host", 8, 25], ["Kensuko", 7, 50], ["Carlot", 2, 25], ["Socks", 1, 25], ["Wali,s B", 3, 50], ["Her Beauty", 1, 40], ["Recare (RS=25)", 2, 25], ["Recare (RS=50)", 2, 50], ["Dangello", 2, 50], ["Euxine Shampoo 500ml", 5, 25], ["Elence (RS=25)", 1, 25], ["Elence (RS=50)", 3, 50], ["MR Oral Tooth Brush", 6, 30], ["Soft Sub Hair Color", 3, 25], ["Eiffel Tower Body Spray", 2, 25]], "items": [["Argan Deluxe", 40], ["Makeup Pouch", 50], ["Ammore Care", 40], ["Fibre Life", 30], ["Mana", 50], ["Beauty Host", 25], ["Kensuko", 50], ["Carlot", 25], ["Socks", 25], ["Wali,s B", 50], ["Her Beauty", 40], ["Recare (RS=25)", 25], ["Recare (RS=50)", 50], ["Dangello", 50], ["Euxine Shampoo 500ml", 25], ["Elence (RS=25)", 25], ["Elence (RS=50)", 50], ["MR Oral Tooth Brush", 30], ["Soft Sub Hair Color", 25], ["Eiffel Tower Body Spray", 25]]}, {"key": "Bilal", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "BILAL", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["AAA Soap 200gm", 7, 20], ["Make Up Pouch", 1, 50], ["koec", 1, 50], ["Mana", 1, 50], ["Dexe", 8, 25], ["Scenabella", 1, 50], ["Loreal Maybelline ", 5, 30], ["Argan Deluxe", 5, 40], ["Socks", 5, 25], ["Dear Body Hand Cream", 3, 25], ["Ammore Care", 3, 40], ["Yesnow Gel Scrub 100ml", 4, 25], ["Ky Jelly", 1, 50], ["Fibre Life", 3, 30], ["Bunne Fibre Hair (RS=80)", 2, 80], ["Recare (RS=25)", 3, 25], ["Envisha Cream 50ml", 0, 70]], "items": [["AAA Soap 200gm", 20], ["Make Up Pouch", 50], ["koec", 50], ["Mana", 50], ["Dexe", 25], ["Scenabella", 50], ["Loreal Maybelline ", 30], ["Argan Deluxe", 40], ["Socks", 25], ["Dear Body Hand Cream", 25], ["Ammore Care", 40], ["Yesnow Gel Scrub 100ml", 25], ["Ky Jelly", 50], ["Fibre Life", 30], ["Bunne Fibre Hair (RS=80)", 80], ["Recare (RS=25)", 25], ["Envisha Cream 50ml", 70]]}, {"key": "WASIQ", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "WASIQ HUSSAIN", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["AAA Soap 200gm", 7, 20], ["Make Up Pouch", 1, 50], ["koec", 1, 50], ["Mana", 1, 50], ["Dexe", 7, 25], ["Scenabella", 1, 50], ["Loreal Maybelline ", 4, 30], ["Argan Deluxe", 5, 40], ["Socks", 5, 25], ["Dear Body Hand Cream", 3, 25], ["Ammore Care", 3, 40], ["Yesnow Gel Scrub 100ml", 4, 25], ["Ky Jelly", 1, 50], ["Fibre Life", 1, 30], ["Bunne Fibre Hair (RS=80)", 2, 80], ["Recare (RS=25)", 3, 25], ["Envisha Cream 50ml", 0, 70]], "items": [["AAA Soap 200gm", 20], ["Make Up Pouch", 50], ["koec", 50], ["Mana", 50], ["Dexe", 25], ["Scenabella", 50], ["Loreal Maybelline ", 30], ["Argan Deluxe", 40], ["Socks", 25], ["Dear Body Hand Cream", 25], ["Ammore Care", 40], ["Yesnow Gel Scrub 100ml", 25], ["Ky Jelly", 50], ["Fibre Life", 30], ["Bunne Fibre Hair (RS=80)", 80], ["Recare (RS=25)", 25], ["Envisha Cream 50ml", 70]]}, {"key": "FARRUKH SHAHZAD", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "FARRUKH SHAHZAD", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["Dexe Face Mask", 0, 30], ["Dexe Hair Fibre", 0, 25], ["Sisyphus (RS=200)", 0, 200], ["AAA Soap 200gm", 0, 20], ["AAA Soap 200gm", 4, 50], ["Elence (RS=25)", 1, 25], ["Nuspa Hair Mask Mint Oil 300ml", 1, 50], ["Kensuko", 2, 50], ["Dear Body Lotion ", 0, 50], ["Dangello", 1, 50], ["Body Luxuries Body Mist 250ml", 1, 50], ["Eiffel Tower Body Spray", 3, 25], ["Loreal Maybelline", 1, 30], ["Yesnow Gel Scrub 150ml", 5, 25], ["Koec", 1, 50], ["Fibre Life", 1, 30], ["Bunne Fibre Hair", 0, 80], ["Lonkoom Perfume 100ml", 0, 100], ["Sisyphus (RS=50)", 0, 50], ["Nuspa Hair Mask Mint Oil 300ml", 0, 50], ["Make Up Pouch", 1, 50], ["AAA Soap 200gm", 0, 20], ["Body Luxuries Body Mist 250ml", 0, 50], ["Mr Oral Tooth Brush", 4, 30], ["Organ Deluxe", 3, 40], ["Her Beauty", 1, 40], ["Wali,s B", 2, 100]], "items": [["Dexe Face Mask", 30], ["Dexe Hair Fibre", 25], ["Sisyphus (RS=200)", 200], ["AAA Soap 200gm", 20], ["Elence (RS=25)", 25], ["Nuspa Hair Mask Mint Oil 300ml", 50], ["Kensuko", 50], ["Dear Body Lotion ", 50], ["Dangello", 50], ["Body Luxuries Body Mist 250ml", 50], ["Eiffel Tower Body Spray", 25], ["Loreal Maybelline", 30], ["Yesnow Gel Scrub 150ml", 25], ["Koec", 50], ["Fibre Life", 30], ["Bunne Fibre Hair", 80], ["Lonkoom Perfume 100ml", 100], ["Sisyphus (RS=50)", 50], ["Make Up Pouch", 50], ["Mr Oral Tooth Brush", 30], ["Organ Deluxe", 40], ["Her Beauty", 40], ["Wali,s B", 100]]}, {"key": "MISS ASMA NAZ", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "MISS ASMA NAZ", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["AAA Soap", 2, 40], ["Kohane Sunne", 66, 75], ["Myboon", 2, 75], ["Gabrini", 19, 30], ["Sisyphus", 23, 75], ["Sisyphus (RS=150)", 3, 150], ["Sisyphus (RS=200)", 4, 200], ["Lucsious", 2, 100], ["Argan Deluxe", 3, 40], ["BBA", 90, 50], ["Loreal,Maybelline", 77, 30], ["Ammore Care", 1, 40], ["Abid Sb (KHI) items", 3, 30], ["Mana", 4, 50], ["HR Hair Rain Coat Spray 200ml", 0, 150], ["Hair Energy", 3, 40], ["Yesnow Gel Scrub 150ml", 1, 25]], "items": [["AAA Soap", 40], ["Kohane Sunne", 75], ["Myboon", 75], ["Gabrini", 30], ["Sisyphus", 75], ["Sisyphus (RS=150)", 150], ["Sisyphus (RS=200)", 200], ["Lucsious", 100], ["Argan Deluxe", 40], ["BBA", 50], ["Loreal,Maybelline", 30], ["Ammore Care", 40], ["Abid Sb (KHI) items", 30], ["Mana", 50], ["HR Hair Rain Coat Spray 200ml", 150], ["Hair Energy", 40], ["Yesnow Gel Scrub 150ml", 25]]}, {"key": "MISS MEMONA", "title": "D.WATSON PWD ITEM WISE COMMISSION AUGUST 2024", "name": "EMPLOYEE NAME", "from": "FROM:26-07-2024", "to": "TO:25-08-2024", "hasDescription": false, "rows": [["Yes Now 60", 0, 60], ["Yes Now 100", 0, 100], ["Yes Now 120", 0, 120], ["Abid Sb Color Cosmetics ", 0, 50], ["Myboon, Tom Club, K/Sunny,Sisyphus", 0, 0], ["Loreal,Maybelline", 0, 50], ["Sweet Touch", 0, 50]], "items": [["Yes Now 60", 60], ["Yes Now 100", 100], ["Yes Now 120", 120], ["Abid Sb Color Cosmetics ", 50], ["Myboon, Tom Club, K/Sunny,Sisyphus", 0], ["Loreal,Maybelline", 50], ["Sweet Touch", 50]]}];
+
+let GLOBAL_ITEMS = [["AAA Soap", 20], ["AAA Soap 200gm", 20], ["Abid Sb (KHI) items", 30], ["Abid Sb Color Cosmetics ", 50], ["Ammore Care", 40], ["Argan Deluxe", 40], ["BBA", 50], ["BBA (beauty by amna)", 50], ["Beauty Host", 25], ["Beauty Host Face Mask", 25], ["Beauty Host ", 25], ["Body Luxuries", 50], ["Body Luxuries Body Mist 250ml", 50], ["Bunne Fibre Hair", 80], ["Bunne Fibre Hair (RS=80)", 80], ["Bunne Hair Fibre", 80], ["BUNEE FIBER HAIR", 80], ["Carlot", 25], ["Carlott", 50], ["CN Mofaxin", 50], ["Dangello", 50], ["Dear Body", 50], ["Dear Body Hand Cream", 25], ["Dear Body Lotion ", 50], ["Dexe", 25], ["Dexe Face Mask", 30], ["Dexe Hair Fibre", 25], ["Eiffel Tower", 25], ["Eiffel Tower Body Spray", 25], ["Elence", 25], ["Elence (RS=25)", 25], ["Elence (RS=50)", 50], ["Elence RS =50", 50], ["Envisha Cream 50ml", 70], ["Euxine Shampoo 500ml", 25], ["Fibre Life", 30], ["Fuxine Shampoo", 50], ["Funine Shampoo", 25], ["Gabrini", 30], ["Hair Energy", 40], ["Her Beauty", 40], ["HR Hair Rain Coat Spray 200ml", 150], ["Kensuko", 50], ["koec", 50], ["Koec", 50], ["Kohane Sunne", 75], ["Ky Jelly", 50], ["KY Jelly", 50], ["Lonkoom Perfume 100ml", 100], ["Lonkoom prefume", 100], ["Loreal Maybelline", 30], ["Loreal Maybelline ", 30], ["Loreal,Maybelline", 30], ["Lucsious", 100], ["Make Up Pouch", 50], ["Makeup Pouch", 50], ["Mana", 50], ["Mana Cosmetics", 50], ["MARK ANKLE SUPPORT SBT 2525", 50], ["MARK DOCTOR COAT", 50], ["MARK KNEE BRACE SPORT CARE SHUTENG NO 81440", 50], ["MARK KNEE SUPPORT", 50], ["MARK KNEE SUPPORT BLUE OCEAN KK-333", 50], ["MARK KNEE SUPPORT BO-222 BLUE OCEAN", 50], ["MARK KNEE SUPPORT HOTIK HT 888", 50], ["MARK KNEE SUPPORT ST 2549 2", 50], ["MARK LAB COAT ML BA 01", 50], ["MARK LUMBER SACRAL BACK SUPPORT BEST MED", 50], ["MARK PALM SUPPORT HOTIK HT 998", 50], ["MARK POSTURE SUPPORT SHUTENG NO 81448", 50], ["MARK PREMIUM SCRUB+OT KIT", 50], ["MARK SURGICAL GOWN", 50], ["MARK WAIST SUPPORT HEAT X K-786", 50], ["MARK WAIST TRIMMER BLUE OCEAN ST 24118", 50], ["MARK WINTER SCRUB PREMIUM", 50], ["Mooyam", 50], ["MR Oral Tooth Brush", 30], ["Mr Oral Tooth Brush", 30], ["Myboon", 75], ["Myboon, Tom Club, K/Sunny,Sisyphus", 0], ["Nuspa Anti Hair Loss Shampoo", 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 50], ["Nuspa Hair Mask Mint Oil 300ml", 50], ["Organ Deluxe", 40], ["Recare (RS 25)", 25], ["Recare (RS 50)", 50], ["Recare (RS=25)", 25], ["Recare (RS=50)", 50], ["Recare 25", 25], ["Recare 50", 50], ["Romacy", 50], ["Scenabela", 50], ["Scenabella", 50], ["SILICONE HEEL COVER LT 880", 50], ["Sisyphus", 75], ["Sisyphus (RS=100)", 100], ["Sisyphus (RS=150)", 150], ["Sisyphus (RS=200)", 200], ["Sisyphus (RS=50)", 50], ["Socks", 25], ["Soft Sub Hair Color", 25], ["Softsub Hair Color", 25], ["Softsub Hair Color (RS=70)", 70], ["Sweet Touch", 50], ["Wali's B", 100], ["Wali,s B", 100], ["Walis B", 100], ["Watson", 70], ["Waveparty Hair Spary", 200], ["Yes Now 100", 100], ["Yes Now 120", 120], ["Yes Now 60", 60], ["Yesnow Gel Moist Cleanser", 50], ["Yesnow Gel Scrub 100ml", 25], ["Yesnow Gel Scrub 150ml", 25], ["Yesnow Moist Gel Juicy Peach Cleanser Mens", 50], ["Yesnow Moist Gel Mens Cleanser", 50], ["yesbow moist gel", 50]];
+
+let activeKey = SHEETS[0].key;
+let state = {};
+let currentTbody = null;
+let currentHasDesc = false;
+
+SHEETS.forEach(s => {
+  state[s.key] = {
+    rows: s.rows.map(r => [r[0], r[1]]),
+    title: s.title || '',
+    name: s.name || '',
+    from: s.from || '',
+    to: s.to || ''
+  };
+});
+
+function norm(s) { return (s || '').trim().toLowerCase(); }
+function properCase(s) {
+  return (s || '').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+function escapeHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function rateOf(key, name) {
+  const f = GLOBAL_ITEMS.find(i => norm(i[0]) === norm(name));
+  return f ? f[1] : null;
+}
+function debounce(fn, delay) {
+  let t;
+  return function(...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  SHEETS.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (s.key === activeKey ? ' active' : '');
+    btn.textContent = s.name || s.key;
+    btn.addEventListener('click', () => { activeKey = s.key; renderTabs(); renderSheet(); });
+    tabs.appendChild(btn);
+  });
+}
+
+function getConfig(key) { return SHEETS.find(s => s.key === key); }
+
+function renderSheet() {
+  const cfg = getConfig(activeKey);
+  const container = document.getElementById('sheetContainer');
+  const hasDesc = cfg.hasDescription;
+  const st = state[activeKey];
+
+  container.innerHTML = `
+    <input class="hdr-input hdr-title" id="hdrTitle" value="${escapeHtml(st.title)}">
+    <input class="hdr-input hdr-name" id="hdrName" value="${escapeHtml(st.name)}">
+    <div class="dates">
+      <input class="hdr-input hdr-date" id="hdrFrom" value="${escapeHtml(st.from)}">
+      <input class="hdr-input hdr-date right" id="hdrTo" value="${escapeHtml(st.to)}">
+    </div>
+    <div class="sheet-inner">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th style="width:6%">S.no</th>
+          <th style="width:${hasDesc ? '30%':'44%'}">Item Name</th>
+          ${hasDesc ? '<th style="width:20%">Item Description</th>' : ''}
+          <th style="width:12%">Qty</th>
+          <th style="width:12%">C/Rate</th>
+          <th style="width:14%">Total</th>
+          <th class="action-col" style="width:6%"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td colspan="${hasDesc?3:2}">TOTAL</td>
+          <td id="totalQty">0</td>
+          <td></td>
+          <td id="totalAmount">0</td>
+          <td class="action-col"></td>
+        </tr>
+        <tr class="comm-row">
+          <td colspan="${hasDesc?5:4}">TOTAL COMMISSION AMOUNT</td>
+          <td id="totalComm">0</td>
+          <td class="action-col"></td>
+        </tr>
+      </tfoot>
+    </table>
+    <div class="actions">
+      <button id="addRowBtn">+ Row Add Karein</button>
+      <button id="addItemBtn">🛠 Items Manage Karein</button>
+      <button id="printBtn">Print / PDF</button>
+      <button id="resetBtn">Reset (Original Data)</button>
+    </div>
+    <div class="sign">Authorized Sign...........</div>
+    </div>
+  `;
+
+  const tbody = document.getElementById('tbody');
+  currentTbody = tbody;
+  currentHasDesc = hasDesc;
+  st.rows.forEach(([name, qty]) => addRowEl(tbody, name, qty, hasDesc));
+  recalc();
+
+  document.getElementById('addRowBtn').addEventListener('click', () => { const nt = addRowEl(tbody, '', '', hasDesc); recalc(); nt.querySelector('.itemInput').focus(); });
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    const orig = getConfig(activeKey);
+    state[activeKey].rows = orig.rows.map(r => [r[0], r[1]]);
+    state[activeKey].title = orig.title || '';
+    state[activeKey].name = orig.name || '';
+    state[activeKey].from = orig.from || '';
+    state[activeKey].to = orig.to || '';
+    renderSheet();
+  });
+  document.getElementById('addItemBtn').addEventListener('click', () => {
+    document.getElementById('newItemName').value = '';
+    document.getElementById('newItemRate').value = '';
+    renderItemsList();
+    document.getElementById('itemModal').classList.add('show');
+  });
+
+  document.getElementById('hdrTitle').addEventListener('input', e => state[activeKey].title = e.target.value);
+  document.getElementById('hdrName').addEventListener('input', e => state[activeKey].name = e.target.value);
+  document.getElementById('hdrFrom').addEventListener('input', e => state[activeKey].from = e.target.value);
+  document.getElementById('hdrTo').addEventListener('input', e => state[activeKey].to = e.target.value);
+}
+
+function highlightMatch(name, query) {
+  const idx = name.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return escapeHtml(name);
+  return escapeHtml(name.slice(0, idx)) + '<mark>' + escapeHtml(name.slice(idx, idx + query.length)) + '</mark>' + escapeHtml(name.slice(idx + query.length));
+}
+
+function addRowEl(tbody, itemName, qty, hasDesc) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="sno"></td>
+    <td class="item-cell">
+      <input type="text" class="itemInput" autocomplete="off" placeholder="Item search karein...">
+      <div class="suggest-box"></div>
+    </td>
+    ${hasDesc ? '<td class="desc-cell"><span class="descText"></span></td>' : ''}
+    <td><input type="number" class="qtyInput" min="0" value="${qty}"></td>
+    <td class="rate-cell">0</td>
+    <td class="total-cell">0</td>
+    <td class="action-col"><button class="rm-btn">X</button></td>
+  `;
+  tbody.appendChild(tr);
+
+  const itemInput = tr.querySelector('.itemInput');
+  const suggestBox = tr.querySelector('.suggest-box');
+  itemInput.value = itemName || '';
+
+  let hlIndex = -1;
+
+  function getMatches(query) {
+    const q = norm(query);
+    if (!q) return [];
+    return GLOBAL_ITEMS.filter(([name]) => norm(name).includes(q)).slice(0, 8);
+  }
+
+  function renderSuggestions(query) {
+    const matches = getMatches(query);
+    hlIndex = -1;
+    if (!query) { suggestBox.classList.remove('show'); suggestBox.innerHTML = ''; return; }
+    if (matches.length === 0) {
+      suggestBox.innerHTML = '<div class="suggest-empty">Koi item nahi mila</div>';
+    } else {
+      suggestBox.innerHTML = matches.map(([name, rate], i) =>
+        `<div class="suggest-item" data-idx="${i}" data-name="${escapeHtml(name)}">${highlightMatch(name, query)} <span style="color:#888;">(Rs ${rate})</span></div>`
+      ).join('');
+      [...suggestBox.querySelectorAll('.suggest-item')].forEach(el => {
+        el.addEventListener('mousedown', ev => {
+          ev.preventDefault();
+          itemInput.value = el.getAttribute('data-name');
+          suggestBox.classList.remove('show');
+          recalc();
+        });
+      });
+    }
+    suggestBox.classList.add('show');
+  }
+
+  const debouncedSearch = debounce(val => renderSuggestions(val), 220);
+
+  itemInput.addEventListener('input', e => {
+    debouncedSearch(e.target.value);
+    recalc();
+  });
+  itemInput.addEventListener('focus', e => {
+    if (e.target.value) debouncedSearch(e.target.value);
+  });
+  itemInput.addEventListener('keydown', e => {
+    const items = [...suggestBox.querySelectorAll('.suggest-item')];
+    if (suggestBox.classList.contains('show') && items.length > 0) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); hlIndex = Math.min(hlIndex + 1, items.length - 1); items.forEach((el,i)=>el.classList.toggle('hl', i===hlIndex)); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); hlIndex = Math.max(hlIndex - 1, 0); items.forEach((el,i)=>el.classList.toggle('hl', i===hlIndex)); return; }
+      if (e.key === 'Escape') { suggestBox.classList.remove('show'); return; }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (hlIndex >= 0) { itemInput.value = items[hlIndex].getAttribute('data-name'); }
+        suggestBox.classList.remove('show');
+        recalc();
+        tr.querySelector('.qtyInput').focus();
+        return;
+      }
+    } else if (e.key === 'Enter') {
+      // No suggestion open — item already chosen/typed, jump straight to Qty
+      e.preventDefault();
+      tr.querySelector('.qtyInput').focus();
+    }
+  });
+  itemInput.addEventListener('blur', () => { setTimeout(() => suggestBox.classList.remove('show'), 150); });
+
+  const qtyInput = tr.querySelector('.qtyInput');
+  qtyInput.addEventListener('input', recalc);
+  qtyInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const newRow = addRowEl(currentTbody, '', '', currentHasDesc);
+      recalc();
+      newRow.querySelector('.itemInput').focus();
+    }
+  });
+  tr.querySelector('.rm-btn').addEventListener('click', () => { tr.remove(); recalc(); });
+  return tr;
+}
+
+function recalc() {
+  const tbody = document.getElementById('tbody');
+  const cfg = getConfig(activeKey);
+  let totalQty = 0, totalAmount = 0;
+  [...tbody.children].forEach((tr, idx) => {
+    tr.querySelector('.sno').textContent = idx + 1;
+    const name = tr.querySelector('.itemInput').value;
+    const qty = parseFloat(tr.querySelector('.qtyInput').value) || 0;
+    const rate = name ? rateOf(activeKey, name) : null;
+    const total = rate !== null ? qty * rate : 0;
+    tr.querySelector('.rate-cell').textContent = rate !== null ? rate : (name ? '?' : '');
+    tr.querySelector('.total-cell').textContent = total;
+    if (cfg.hasDescription) {
+      const d = tr.querySelector('.descText');
+      if (d) d.textContent = name ? properCase(name) : '';
+    }
+    totalQty += qty;
+    totalAmount += total;
+  });
+  document.getElementById('totalQty').textContent = totalQty;
+  document.getElementById('totalAmount').textContent = totalAmount;
+  document.getElementById('totalComm').textContent = totalAmount;
+}
+
+function renderItemsList() {
+  const wrap = document.getElementById('itemsListWrap');
+  const items = GLOBAL_ITEMS;
+  if (items.length === 0) {
+    wrap.innerHTML = '<div class="items-empty">Koi item nahi hai. Neeche se add karein.</div>';
+    return;
+  }
+  wrap.innerHTML = items.map((_, i) => `
+    <div class="item-row" data-i="${i}">
+      <input type="text" class="edit-name">
+      <input type="number" class="edit-rate">
+      <button class="item-del-btn" data-i="${i}">X</button>
+    </div>
+  `).join('');
+
+  [...wrap.querySelectorAll('.item-row')].forEach((row, i) => {
+    const nameInput = row.querySelector('.edit-name');
+    const rateInput = row.querySelector('.edit-rate');
+    nameInput.value = items[i][0];
+    rateInput.value = items[i][1];
+    nameInput.addEventListener('change', () => {
+      const newName = nameInput.value.trim();
+      if (!newName) { nameInput.value = items[i][0]; return; }
+      const oldName = items[i][0];
+      GLOBAL_ITEMS[i][0] = newName;
+      // rename applies everywhere: current visible rows + all sheets' stored rows
+      if (currentTbody) {
+        [...currentTbody.querySelectorAll('.itemInput')].forEach(inp => {
+          if (norm(inp.value) === norm(oldName)) inp.value = newName;
+        });
+      }
+      Object.values(state).forEach(s => {
+        s.rows.forEach(r => { if (norm(r[0]) === norm(oldName)) r[0] = newName; });
+      });
+      recalc();
+    });
+    rateInput.addEventListener('change', () => {
+      const newRate = parseFloat(rateInput.value);
+      if (isNaN(newRate)) { rateInput.value = items[i][1]; return; }
+      GLOBAL_ITEMS[i][1] = newRate;
+      recalc();
+    });
+    row.querySelector('.item-del-btn').addEventListener('click', () => {
+      if (!confirm(`"${items[i][0]}" ko sab sheets se hata dein?`)) return;
+      GLOBAL_ITEMS.splice(i, 1);
+      renderItemsList();
+      recalc();
+    });
+  });
+}
+
+document.getElementById('cancelItemBtn').addEventListener('click', () => document.getElementById('itemModal').classList.remove('show'));
+document.getElementById('saveItemBtn').addEventListener('click', () => {
+  const name = document.getElementById('newItemName').value.trim();
+  const rate = parseFloat(document.getElementById('newItemRate').value);
+  if (!name || isNaN(rate)) { alert('Item Name aur Rate dono bharein.'); return; }
+  if (GLOBAL_ITEMS.some(i => norm(i[0]) === norm(name))) { alert('Yeh item pehle se list mein hai.'); return; }
+  GLOBAL_ITEMS.push([name, rate]);
+  document.getElementById('newItemName').value = '';
+  document.getElementById('newItemRate').value = '';
+  renderItemsList();
+  recalc();
+});
+
+renderTabs();
+renderSheet();
+
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key.toLowerCase() === 'i') {
+    e.preventDefault();
+    if (currentTbody) {
+      const newRow = addRowEl(currentTbody, '', '', currentHasDesc);
+      recalc();
+      newRow.querySelector('.itemInput').focus();
+    }
+  }
+});
+
+// --- Save / Load full state as a JSON file (no server, no browser storage needed) ---
+function showStatus(msg) {
+  const el = document.getElementById('saveStatus');
+  el.textContent = msg;
+  setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 4000);
+}
+
+document.getElementById('saveDataBtn').addEventListener('click', () => {
+  const payload = { savedAt: new Date().toISOString(), state: state, globalItems: GLOBAL_ITEMS };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const stamp = new Date().toISOString().slice(0,10);
+  a.download = `DWatson_Commission_Data_${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showStatus('Data file download ho gayi — is file ko sambhal kar rakhein.');
+});
+
+document.getElementById('loadDataBtn').addEventListener('click', () => {
+  document.getElementById('loadFileInput').click();
+});
+
+document.getElementById('loadFileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const payload = JSON.parse(evt.target.result);
+      const loadedState = payload.state || payload;
+      SHEETS.forEach(s => {
+        if (loadedState[s.key]) {
+          state[s.key] = loadedState[s.key];
+        }
+      });
+      if (payload.globalItems && Array.isArray(payload.globalItems)) {
+        GLOBAL_ITEMS = payload.globalItems;
+      }
+      renderTabs();
+      renderSheet();
+      showStatus('Data wapis load ho gaya.');
+    } catch (err) {
+      alert('Yeh file valid save-file nahi hai.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+</script>
+
+</body>
+</html>
