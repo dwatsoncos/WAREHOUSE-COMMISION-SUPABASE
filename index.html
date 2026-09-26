@@ -3,43 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <title>D.WATSON PWD - Commission Sheets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --pine: #1f5c46;
+    --pine-dark: #163f30;
+    --pine-light: #e7efe9;
+    --paper: #fffef9;
+    --canvas: #eef2ee;
+    --ink: #1c211d;
+    --slate: #5c6b63;
+    --gold: #a9762f;
+    --clay: #ab4230;
+    --line: #d7ddd4;
+  }
   * { box-sizing: border-box; }
   body {
     font-family: "Times New Roman", Georgia, serif;
-    background: #eef1f4;
+    background: var(--canvas);
     margin: 0;
-    padding: 20px;
-    color: #1a1a1a;
+    padding: 0;
+    color: var(--ink);
   }
-  .wrap { max-width: 860px; margin: 0 auto; }
+  .ui { font-family: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .topbar {
+    position: sticky; top: 0; z-index: 60;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    background: var(--pine);
+    color: #fff;
+    padding: 12px 22px;
+  }
+  .topbar .brand { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+  .topbar .brand span { display: block; font-weight: 400; font-size: 11.5px; color: #cfe3d8; margin-top: 1px; }
+  .topbar .right { display: flex; align-items: center; gap: 10px; }
+  .save-indicator { font-family: 'Inter', sans-serif; font-size: 12px; color: #cfe3d8; white-space: nowrap; }
+  .save-indicator.dirty { color: #ffd98a; }
+  .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 7px; border: none; cursor: pointer; }
+  .btn-primary { background: #fff; color: var(--pine-dark); }
+  .btn-primary:hover { background: #f0f7f3; }
+  .btn-ghost { background: rgba(255,255,255,0.14); color: #fff; }
+  .btn-ghost:hover { background: rgba(255,255,255,0.22); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 20px; }
   .tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 0;
+    gap: 6px;
+    margin-bottom: 14px;
   }
   .tab-btn {
-    font-family: Arial, sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 12.5px;
-    padding: 8px 12px;
-    border: 1px solid #b7c2cc;
-    border-bottom: none;
-    background: #cfd8e0;
-    color: #333;
-    border-radius: 6px 6px 0 0;
+    font-weight: 500;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--slate);
+    border-radius: 999px;
     cursor: pointer;
   }
   .tab-btn.active {
-    background: #fff;
-    font-weight: bold;
-    color: #1a5c33;
+    background: var(--pine);
+    border-color: var(--pine);
+    font-weight: 600;
+    color: #fff;
   }
   .sheet {
     background: #fff;
     padding: 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-    border-radius: 0 6px 6px 6px;
+    border-radius: 10px;
+    overflow: hidden;
     border: 3px solid #000;
   }
   .sheet-inner { padding: 18px 20px 22px; }
@@ -50,6 +86,17 @@
     font-size: 13px; font-weight: bold;
     margin: 0; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 8px 20px;
   }
+  .month-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-family: 'Inter', sans-serif; font-size: 12.5px;
+    padding: 10px 20px; background: var(--pine-light); border-bottom: 1px solid var(--line);
+  }
+  .month-bar label { font-weight: 600; color: var(--pine-dark); }
+  .month-bar input[type="month"], .month-bar select {
+    width: auto; padding: 5px 8px; font-size: 12.5px;
+    border: 1px solid var(--line); border-radius: 5px; background: #fff;
+  }
+  .cloud-status { margin-left: auto; font-style: italic; color: var(--pine-dark); }
   .hdr-input {
     border: 1px dashed transparent;
     background: transparent;
@@ -78,7 +125,7 @@
   th, td { border: 1px solid #444; padding: 5px 6px; text-align: center; }
   th { background: #d9d9d9; font-weight: bold; color: #000; }
   td.item-cell, td.desc-cell { text-align: left; position: relative; }
-  .sno { color: #17458f; font-weight: bold; }
+  .sno { color: var(--pine-dark); font-weight: bold; }
   select, input[type="number"], input[type="text"] {
     width: 100%; border: 1px solid #b9c2cc; border-radius: 3px; padding: 4px;
     font-family: inherit; font-size: 12.5px; background: #fffef5;
@@ -126,23 +173,24 @@
   }
   #addRowBtn { background: #3a6ea5; color: #fff; }
   #addItemBtn { background: #8e5cc4; color: #fff; }
-  #printBtn { background: #2f8f4e; color: #fff; }
-  #resetBtn { background: #b5484d; color: #fff; }
-  #saveDataBtn { background: #d68910; color: #fff; }
+  #printBtn { background: var(--pine); color: #fff; }
+  #resetBtn { background: var(--clay); color: #fff; }
+  #saveDataBtn { background: var(--gold); color: #fff; }
   #loadDataBtn { background: #566573; color: #fff; }
   .modal-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-    align-items: center; justify-content: center; z-index: 50;
+    align-items: center; justify-content: center; z-index: 70;
   }
   .modal-overlay.show { display: flex; }
-  .modal-box { background: #fff; padding: 22px 26px; border-radius: 8px; width: 300px; box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
+  .modal-box { background: #fff; padding: 22px 26px; border-radius: 8px; width: 300px; box-shadow: 0 6px 24px rgba(0,0,0,0.25); font-family: 'Inter', sans-serif; }
   .modal-box.manage-box { width: 380px; }
-  .modal-box h3 { margin: 0 0 14px 0; font-size: 16px; font-family: Arial, sans-serif;}
-  .modal-box label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; font-family: Arial, sans-serif;}
+  .modal-box.history-box { width: 460px; max-height: 80vh; display: flex; flex-direction: column; }
+  .modal-box h3 { margin: 0 0 14px 0; font-size: 16px; font-family: 'Inter', sans-serif; }
+  .modal-box label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: bold; font-family: 'Inter', sans-serif; }
   .modal-box input { width: 100%; margin-bottom: 12px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
   .modal-actions button { padding: 6px 14px; font-size: 13px; }
-  #saveItemBtn { background: #2f8f4e; color: #fff; white-space: nowrap; }
+  #saveItemBtn { background: var(--pine); color: #fff; white-space: nowrap; }
   #cancelItemBtn { background: #999; color: #fff; }
   .items-list-wrap {
     max-height: 280px;
@@ -177,17 +225,30 @@
     text-align: center;
     font-family: Arial, sans-serif;
     font-size: 12.5px;
-    color: #2f8f4e;
-    margin-top: -6px;
+    color: var(--pine);
+    margin-top: 10px;
     margin-bottom: 6px;
     min-height: 16px;
   }
+  #historyFilter { margin-bottom: 10px; }
+  .history-list { overflow-y: auto; flex: 1; border: 1px solid #e2e6ea; border-radius: 6px; }
+  .history-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 12px; border-bottom: 1px solid #eef1f4; font-family: 'Inter', sans-serif;
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-info .hr-name { font-weight: 600; font-size: 13px; color: var(--ink); }
+  .history-info .hr-meta { font-size: 11.5px; color: var(--slate); margin-top: 2px; }
+  .history-open-btn { background: var(--pine); color: #fff; flex-shrink: 0; padding: 6px 12px; font-size: 12px; border-radius: 5px; }
+  .history-empty { padding: 22px; text-align: center; color: #888; font-size: 12.5px; font-family: 'Inter', sans-serif; }
 
   @media print {
     @page { size: A4 portrait; margin: 12mm; }
     body { background: #fff; padding: 0; font-family: "Arial Narrow", Arial, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .wrap { max-width: 100%; }
+    .wrap { max-width: 100%; padding: 0; }
+    .topbar { display: none; }
     .tabs { display: none; }
+    .month-bar { display: none; }
     .sheet { box-shadow: none; border-radius: 0; padding: 0; border: 3px solid #000 !important; }
     .actions { display: none; }
     .save-status { display: none; }
@@ -216,12 +277,21 @@
 </head>
 <body>
 
+<div class="topbar ui">
+  <div class="brand">D.WATSON PWD<span>Item-wise commission book</span></div>
+  <div class="right">
+    <span class="save-indicator" id="saveIndicator">All changes saved</span>
+    <button class="btn btn-ghost" id="historyBtn">🕘 History</button>
+    <button class="btn btn-primary" id="saveAllBtn">💾 Save</button>
+  </div>
+</div>
+
 <div class="wrap">
   <div class="tabs" id="tabs"></div>
   <div class="sheet" id="sheetContainer"></div>
   <div class="actions" style="margin-top:10px;">
-    <button id="saveDataBtn">💾 Save Data (Download)</button>
-    <button id="loadDataBtn">📂 Load Data (Upload)</button>
+    <button id="saveDataBtn">📤 Export Backup (JSON)</button>
+    <button id="loadDataBtn">📂 Import Backup (JSON)</button>
     <input type="file" id="loadFileInput" accept=".json" style="display:none;">
   </div>
   <div class="save-status" id="saveStatus"></div>
@@ -242,7 +312,24 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="historyModal">
+  <div class="modal-box history-box">
+    <h3>Saved Data</h3>
+    <input type="text" id="historyFilter" placeholder="Filter by employee or month...">
+    <div id="historyList" class="history-list"></div>
+    <div class="modal-actions" style="margin-top:12px;">
+      <button id="closeHistoryBtn" style="background:#999;color:#fff;">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+const SUPABASE_URL = 'https://ndocduawetgnguwucvom.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_yQhOIoBWzkxp2U5mRIzXcA_JkihLq3L';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const SHEETS = [{"key": "Marklution", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "SHARIB", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": true, "rows": [["MARK ANKLE SUPPORT SBT 2525", 1, 50], ["MARK DOCTOR COAT", 7, 50], ["MARK KNEE BRACE SPORT CARE SHUTENG NO 81440", 1, 50], ["MARK KNEE SUPPORT", 1, 50], ["MARK KNEE SUPPORT BLUE OCEAN KK-333", 10, 50], ["MARK KNEE SUPPORT BO-222 BLUE OCEAN", 1, 50], ["MARK KNEE SUPPORT HOTIK HT 888", 7, 50], ["MARK KNEE SUPPORT ST 2549 2", 5, 50], ["MARK LAB COAT ML BA 01", 1, 50], ["MARK LUMBER SACRAL BACK SUPPORT BEST MED", 1, 50], ["MARK PALM SUPPORT HOTIK HT 998", 5, 50], ["MARK POSTURE SUPPORT SHUTENG NO 81448", 1, 50], ["MARK PREMIUM SCRUB+OT KIT", 3, 50], ["MARK SURGICAL GOWN", 1, 50], ["MARK WAIST SUPPORT HEAT X K-786", 1, 50], ["MARK WAIST TRIMMER BLUE OCEAN ST 24118", 1, 50], ["MARK WINTER SCRUB PREMIUM", 1, 50], ["SILICONE HEEL COVER LT 880", 1, 50]], "items": [["MARK ANKLE SUPPORT SBT 2525", 50], ["MARK DOCTOR COAT", 50], ["MARK KNEE BRACE SPORT CARE SHUTENG NO 81440", 50], ["MARK KNEE SUPPORT", 50], ["MARK KNEE SUPPORT BLUE OCEAN KK-333", 50], ["MARK KNEE SUPPORT BO-222 BLUE OCEAN", 50], ["MARK KNEE SUPPORT HOTIK HT 888", 50], ["MARK KNEE SUPPORT ST 2549 2", 50], ["MARK LAB COAT ML BA 01", 50], ["MARK LUMBER SACRAL BACK SUPPORT BEST MED", 50], ["MARK PALM SUPPORT HOTIK HT 998", 50], ["MARK POSTURE SUPPORT SHUTENG NO 81448", 50], ["MARK PREMIUM SCRUB+OT KIT", 50], ["MARK SURGICAL GOWN", 50], ["MARK WAIST SUPPORT HEAT X K-786", 50], ["MARK WAIST TRIMMER BLUE OCEAN ST 24118", 50], ["MARK WINTER SCRUB PREMIUM", 50], ["SILICONE HEEL COVER LT 880", 50]]}, {"key": "Ehsan", "title": "D.WATSON PWD ITEM WISE COMMISSION JULY 2026", "name": "EHSAN", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["BBA", 0, 50], ["Dexe", 11, 25], ["Elence", 1, 25], ["Elence RS =50", 1, 50], ["Kensuko", 5, 50], ["Fibre Life", 0, 30], ["Euxine Shampoo 500ml", 0, 25], ["Loreal Maybelline", 0, 30], ["Eiffel Tower Body Spray", 7, 25], ["Hair Energy", 5, 40], ["Sisyphus (RS=100)", 17, 100], ["Argan Deluxe", 9, 40], ["Romacy", 0, 50], ["Dear Body Hand Cream", 1, 25], ["Carlott", 0, 50], ["Dear Body", 0, 50], ["Mana Cosmetics", 21, 50], ["Ammore Care", 6, 40], ["Her Beauty", 2, 40], ["Mr Oral Tooth Brush", 15, 30], ["Softsub Hair Color", 4, 25], ["Softsub Hair Color (RS=70)", 4, 70], ["Body Luxuries Body Mist 250ml", 7, 50], ["Watson", 0, 70], ["Beauty Host Face Mask", 2, 25], ["Yesnow Gel Scrub 150ml", 7, 25], ["Yesnow Gel Moist Cleanser", 1, 50], ["Nuspa Anti Hair Loss Shampoo", 15, 50], ["Scenabela", 11, 50], ["Dangello", 0, 50], ["Koec", 1, 50], ["Mooyam", 2, 50], ["CN Mofaxin", 5, 50], ["Socks", 0, 25], ["KY Jelly", 2, 50], ["BUNEE FIBER HAIR", 3, 80], ["Waveparty Hair Spary", 1, 200], ["Funine Shampoo", 2, 25], ["Lonkoom prefume", 1, 100], ["yesbow moist gel", 1, 50], ["Fuxine Shampoo", 2, 50], ["Shediary", 0, 50], ["Walis B", 2, 100], ["Recare (RS=50)", 1, 50]], "items": [["BBA", 50], ["Dexe", 25], ["Elence", 25], ["Elence RS =50", 50], ["Kensuko", 50], ["Fibre Life", 30], ["Euxine Shampoo 500ml", 25], ["Loreal Maybelline", 30], ["Eiffel Tower Body Spray", 25], ["Hair Energy", 40], ["Sisyphus (RS=100)", 100], ["Argan Deluxe", 40], ["Romacy", 50], ["Dear Body Hand Cream", 25], ["Carlott", 50], ["Dear Body", 50], ["Mana Cosmetics", 50], ["Ammore Care", 40], ["Her Beauty", 40], ["Mr Oral Tooth Brush", 30], ["Softsub Hair Color", 25], ["Softsub Hair Color (RS=70)", 70], ["Body Luxuries Body Mist 250ml", 50], ["Watson", 70], ["Beauty Host Face Mask", 25], ["Yesnow Gel Scrub 150ml", 25], ["Yesnow Gel Moist Cleanser", 50], ["Nuspa Anti Hair Loss Shampoo", 50], ["Scenabela", 50], ["Dangello", 50], ["Koec", 50], ["Mooyam", 50], ["CN Mofaxin", 50], ["Socks", 25], ["KY Jelly", 50], ["BUNEE FIBER HAIR", 80], ["Waveparty Hair Spary", 200], ["Funine Shampoo", 25], ["Lonkoom prefume", 100], ["yesbow moist gel", 50], ["Fuxine Shampoo", 50], ["Shediary", 50], ["Walis B", 100], ["Recare (RS=50)", 50]]}, {"key": "Sami ", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "SAMI", "from": "FROM:26-MAY -2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["AAA Soap", 1, 20], ["Mana", 18, 50], ["Eiffel Tower", 4, 25], ["Sisyphus (RS=100)", 13, 100], ["CN Mofaxin", 4, 50], ["Dexe", 2, 25], ["Socks", 11, 25], ["Kensuko", 1, 50], ["Hair Energy", 5, 40], ["Koec", 2, 50], ["Scenabela", 4, 50], ["Watson", 1, 70], ["Ky Jelly", 2, 50], ["Shediary", 2, 50], ["Mooyam", 3, 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 8, 50], ["Euxine Shampoo 500ml", 9, 25], ["Elence", 2, 25], ["Elence (RS=50)", 8, 50], ["Ammore Care", 5, 40], ["Her Beauty", 2, 40], ["Mr Oral Tooth Brush", 6, 30], ["Fibre Life", 1, 30], ["Argan Deluxe", 14, 40], ["Soft Sub Hair Color", 1, 25], ["Yesnow Gel Scrub 150ml", 18, 25], ["Yesnow Moist Gel Juicy Peach Cleanser Mens", 2, 50], ["Body Luxuries Body Mist 250ml", 5, 50], ["Beauty Host Face Mask", 10, 25], ["Loreal Maybelline", 1, 30], ["Wali's B", 1, 100], ["Recare 25", 2, 25], ["Recare 50", 5, 50], ["Mr Oral Tooth Brush", 0, 30], ["Soft Sub Hair Color", 0, 30]], "items": [["AAA Soap", 20], ["Mana", 50], ["Eiffel Tower", 25], ["Sisyphus (RS=100)", 100], ["CN Mofaxin", 50], ["Dexe", 25], ["Socks", 25], ["Kensuko", 50], ["Hair Energy", 40], ["Koec", 50], ["Scenabela", 50], ["Watson", 70], ["Ky Jelly", 50], ["Shediary", 50], ["Mooyam", 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 50], ["Euxine Shampoo 500ml", 25], ["Elence", 25], ["Elence (RS=50)", 50], ["Ammore Care", 40], ["Her Beauty", 40], ["Mr Oral Tooth Brush", 30], ["Fibre Life", 30], ["Argan Deluxe", 40], ["Soft Sub Hair Color", 25], ["Yesnow Gel Scrub 150ml", 25], ["Yesnow Moist Gel Juicy Peach Cleanser Mens", 50], ["Body Luxuries Body Mist 250ml", 50], ["Beauty Host Face Mask", 25], ["Loreal Maybelline", 30], ["Wali's B", 100], ["Recare 25", 25], ["Recare 50", 50]]}, {"key": "USMAN", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "USMAN", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["Dear Body Hand Cream", 2, 25], ["Yesnow Moist Gel Mens Cleanser", 1, 50], ["Dexe Hair Fibre", 4, 25], ["Euxine Shampoo 500ml", 6, 25], ["Her Beauty", 5, 40], ["Socks", 1, 25], ["Makeup Pouch", 1, 50], ["Bunne Hair Fibre", 2, 80], ["Sisyphus (RS=100)", 6, 100], ["Beauty Host ", 11, 25], ["Hair Energy", 7, 40], ["Body Luxuries", 1, 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 4, 50], ["Mana", 4, 50], ["Elence", 2, 50], ["KY Jelly", 2, 50], ["Loreal Maybelline", 1, 30], ["Ammore Care", 4, 40], ["Wali,s B", 2, 100], ["Recare (RS 25)", 7, 25], ["Recare (RS 50)", 5, 50], ["Mr Oral Tooth Brush", 9, 30], ["Fibre Life", 4, 30], ["Argan Deluxe", 5, 40], ["Scenabela", 1, 50], ["Shediary", 2, 50], ["Romacy", 1, 50], ["BBA (beauty by amna)", 1, 50], ["Koec", 1, 50]], "items": [["Dear Body Hand Cream", 25], ["Yesnow Moist Gel Mens Cleanser", 50], ["Dexe Hair Fibre", 25], ["Euxine Shampoo 500ml", 25], ["Her Beauty", 40], ["Socks", 25], ["Makeup Pouch", 50], ["Bunne Hair Fibre", 80], ["Sisyphus (RS=100)", 100], ["Beauty Host ", 25], ["Hair Energy", 40], ["Body Luxuries", 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 50], ["Mana", 50], ["Elence", 50], ["KY Jelly", 50], ["Loreal Maybelline", 30], ["Ammore Care", 40], ["Wali,s B", 100], ["Recare (RS 25)", 25], ["Recare (RS 50)", 50], ["Mr Oral Tooth Brush", 30], ["Fibre Life", 30], ["Argan Deluxe", 40], ["Scenabela", 50], ["Shediary", 50], ["Romacy", 50], ["BBA (beauty by amna)", 50], ["Koec", 50]]}, {"key": "AMIR", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "AMIR", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["Argan Deluxe", 9, 40], ["Makeup Pouch", 1, 50], ["Ammore Care", 2, 40], ["Fibre Life", 2, 30], ["Mana", 2, 50], ["Beauty Host", 8, 25], ["Kensuko", 7, 50], ["Carlot", 2, 25], ["Socks", 1, 25], ["Wali,s B", 3, 50], ["Her Beauty", 1, 40], ["Recare (RS=25)", 2, 25], ["Recare (RS=50)", 2, 50], ["Dangello", 2, 50], ["Euxine Shampoo 500ml", 5, 25], ["Elence (RS=25)", 1, 25], ["Elence (RS=50)", 3, 50], ["MR Oral Tooth Brush", 6, 30], ["Soft Sub Hair Color", 3, 25], ["Eiffel Tower Body Spray", 2, 25]], "items": [["Argan Deluxe", 40], ["Makeup Pouch", 50], ["Ammore Care", 40], ["Fibre Life", 30], ["Mana", 50], ["Beauty Host", 25], ["Kensuko", 50], ["Carlot", 25], ["Socks", 25], ["Wali,s B", 50], ["Her Beauty", 40], ["Recare (RS=25)", 25], ["Recare (RS=50)", 50], ["Dangello", 50], ["Euxine Shampoo 500ml", 25], ["Elence (RS=25)", 25], ["Elence (RS=50)", 50], ["MR Oral Tooth Brush", 30], ["Soft Sub Hair Color", 25], ["Eiffel Tower Body Spray", 25]]}, {"key": "Bilal", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "BILAL", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["AAA Soap 200gm", 7, 20], ["Make Up Pouch", 1, 50], ["koec", 1, 50], ["Mana", 1, 50], ["Dexe", 8, 25], ["Scenabella", 1, 50], ["Loreal Maybelline ", 5, 30], ["Argan Deluxe", 5, 40], ["Socks", 5, 25], ["Dear Body Hand Cream", 3, 25], ["Ammore Care", 3, 40], ["Yesnow Gel Scrub 100ml", 4, 25], ["Ky Jelly", 1, 50], ["Fibre Life", 3, 30], ["Bunne Fibre Hair (RS=80)", 2, 80], ["Recare (RS=25)", 3, 25], ["Envisha Cream 50ml", 0, 70]], "items": [["AAA Soap 200gm", 20], ["Make Up Pouch", 50], ["koec", 50], ["Mana", 50], ["Dexe", 25], ["Scenabella", 50], ["Loreal Maybelline ", 30], ["Argan Deluxe", 40], ["Socks", 25], ["Dear Body Hand Cream", 25], ["Ammore Care", 40], ["Yesnow Gel Scrub 100ml", 25], ["Ky Jelly", 50], ["Fibre Life", 30], ["Bunne Fibre Hair (RS=80)", 80], ["Recare (RS=25)", 25], ["Envisha Cream 50ml", 70]]}, {"key": "WASIQ", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "WASIQ HUSSAIN", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["AAA Soap 200gm", 7, 20], ["Make Up Pouch", 1, 50], ["koec", 1, 50], ["Mana", 1, 50], ["Dexe", 7, 25], ["Scenabella", 1, 50], ["Loreal Maybelline ", 4, 30], ["Argan Deluxe", 5, 40], ["Socks", 5, 25], ["Dear Body Hand Cream", 3, 25], ["Ammore Care", 3, 40], ["Yesnow Gel Scrub 100ml", 4, 25], ["Ky Jelly", 1, 50], ["Fibre Life", 1, 30], ["Bunne Fibre Hair (RS=80)", 2, 80], ["Recare (RS=25)", 3, 25], ["Envisha Cream 50ml", 0, 70]], "items": [["AAA Soap 200gm", 20], ["Make Up Pouch", 50], ["koec", 50], ["Mana", 50], ["Dexe", 25], ["Scenabella", 50], ["Loreal Maybelline ", 30], ["Argan Deluxe", 40], ["Socks", 25], ["Dear Body Hand Cream", 25], ["Ammore Care", 40], ["Yesnow Gel Scrub 100ml", 25], ["Ky Jelly", 50], ["Fibre Life", 30], ["Bunne Fibre Hair (RS=80)", 80], ["Recare (RS=25)", 25], ["Envisha Cream 50ml", 70]]}, {"key": "FARRUKH SHAHZAD", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "FARRUKH SHAHZAD", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["Dexe Face Mask", 0, 30], ["Dexe Hair Fibre", 0, 25], ["Sisyphus (RS=200)", 0, 200], ["AAA Soap 200gm", 0, 20], ["AAA Soap 200gm", 4, 50], ["Elence (RS=25)", 1, 25], ["Nuspa Hair Mask Mint Oil 300ml", 1, 50], ["Kensuko", 2, 50], ["Dear Body Lotion ", 0, 50], ["Dangello", 1, 50], ["Body Luxuries Body Mist 250ml", 1, 50], ["Eiffel Tower Body Spray", 3, 25], ["Loreal Maybelline", 1, 30], ["Yesnow Gel Scrub 150ml", 5, 25], ["Koec", 1, 50], ["Fibre Life", 1, 30], ["Bunne Fibre Hair", 0, 80], ["Lonkoom Perfume 100ml", 0, 100], ["Sisyphus (RS=50)", 0, 50], ["Nuspa Hair Mask Mint Oil 300ml", 0, 50], ["Make Up Pouch", 1, 50], ["AAA Soap 200gm", 0, 20], ["Body Luxuries Body Mist 250ml", 0, 50], ["Mr Oral Tooth Brush", 4, 30], ["Organ Deluxe", 3, 40], ["Her Beauty", 1, 40], ["Wali,s B", 2, 100]], "items": [["Dexe Face Mask", 30], ["Dexe Hair Fibre", 25], ["Sisyphus (RS=200)", 200], ["AAA Soap 200gm", 20], ["Elence (RS=25)", 25], ["Nuspa Hair Mask Mint Oil 300ml", 50], ["Kensuko", 50], ["Dear Body Lotion ", 50], ["Dangello", 50], ["Body Luxuries Body Mist 250ml", 50], ["Eiffel Tower Body Spray", 25], ["Loreal Maybelline", 30], ["Yesnow Gel Scrub 150ml", 25], ["Koec", 50], ["Fibre Life", 30], ["Bunne Fibre Hair", 80], ["Lonkoom Perfume 100ml", 100], ["Sisyphus (RS=50)", 50], ["Make Up Pouch", 50], ["Mr Oral Tooth Brush", 30], ["Organ Deluxe", 40], ["Her Beauty", 40], ["Wali,s B", 100]]}, {"key": "MISS ASMA NAZ", "title": "D.WATSON PWD ITEM WISE COMMISSION JUNE 2026", "name": "MISS ASMA NAZ", "from": "FROM:26-MAY-2026", "to": "TO:25-JUNE-2026", "hasDescription": false, "rows": [["AAA Soap", 2, 40], ["Kohane Sunne", 66, 75], ["Myboon", 2, 75], ["Gabrini", 19, 30], ["Sisyphus", 23, 75], ["Sisyphus (RS=150)", 3, 150], ["Sisyphus (RS=200)", 4, 200], ["Lucsious", 2, 100], ["Argan Deluxe", 3, 40], ["BBA", 90, 50], ["Loreal,Maybelline", 77, 30], ["Ammore Care", 1, 40], ["Abid Sb (KHI) items", 3, 30], ["Mana", 4, 50], ["HR Hair Rain Coat Spray 200ml", 0, 150], ["Hair Energy", 3, 40], ["Yesnow Gel Scrub 150ml", 1, 25]], "items": [["AAA Soap", 40], ["Kohane Sunne", 75], ["Myboon", 75], ["Gabrini", 30], ["Sisyphus", 75], ["Sisyphus (RS=150)", 150], ["Sisyphus (RS=200)", 200], ["Lucsious", 100], ["Argan Deluxe", 40], ["BBA", 50], ["Loreal,Maybelline", 30], ["Ammore Care", 40], ["Abid Sb (KHI) items", 30], ["Mana", 50], ["HR Hair Rain Coat Spray 200ml", 150], ["Hair Energy", 40], ["Yesnow Gel Scrub 150ml", 25]]}, {"key": "MISS MEMONA", "title": "D.WATSON PWD ITEM WISE COMMISSION AUGUST 2024", "name": "EMPLOYEE NAME", "from": "FROM:26-07-2024", "to": "TO:25-08-2024", "hasDescription": false, "rows": [["Yes Now 60", 0, 60], ["Yes Now 100", 0, 100], ["Yes Now 120", 0, 120], ["Abid Sb Color Cosmetics ", 0, 50], ["Myboon, Tom Club, K/Sunny,Sisyphus", 0, 0], ["Loreal,Maybelline", 0, 50], ["Sweet Touch", 0, 50]], "items": [["Yes Now 60", 60], ["Yes Now 100", 100], ["Yes Now 120", 120], ["Abid Sb Color Cosmetics ", 50], ["Myboon, Tom Club, K/Sunny,Sisyphus", 0], ["Loreal,Maybelline", 50], ["Sweet Touch", 50]]}];
 
 let GLOBAL_ITEMS = [["AAA Soap", 20], ["AAA Soap 200gm", 20], ["Abid Sb (KHI) items", 30], ["Abid Sb Color Cosmetics ", 50], ["Ammore Care", 40], ["Argan Deluxe", 40], ["BBA", 50], ["BBA (beauty by amna)", 50], ["Beauty Host", 25], ["Beauty Host Face Mask", 25], ["Beauty Host ", 25], ["Body Luxuries", 50], ["Body Luxuries Body Mist 250ml", 50], ["Bunne Fibre Hair", 80], ["Bunne Fibre Hair (RS=80)", 80], ["Bunne Hair Fibre", 80], ["BUNEE FIBER HAIR", 80], ["Carlot", 25], ["Carlott", 50], ["CN Mofaxin", 50], ["Dangello", 50], ["Dear Body", 50], ["Dear Body Hand Cream", 25], ["Dear Body Lotion ", 50], ["Dexe", 25], ["Dexe Face Mask", 30], ["Dexe Hair Fibre", 25], ["Eiffel Tower", 25], ["Eiffel Tower Body Spray", 25], ["Elence", 25], ["Elence (RS=25)", 25], ["Elence (RS=50)", 50], ["Elence RS =50", 50], ["Envisha Cream 50ml", 70], ["Euxine Shampoo 500ml", 25], ["Fibre Life", 30], ["Fuxine Shampoo", 50], ["Funine Shampoo", 25], ["Gabrini", 30], ["Hair Energy", 40], ["Her Beauty", 40], ["HR Hair Rain Coat Spray 200ml", 150], ["Kensuko", 50], ["koec", 50], ["Koec", 50], ["Kohane Sunne", 75], ["Ky Jelly", 50], ["KY Jelly", 50], ["Lonkoom Perfume 100ml", 100], ["Lonkoom prefume", 100], ["Loreal Maybelline", 30], ["Loreal Maybelline ", 30], ["Loreal,Maybelline", 30], ["Lucsious", 100], ["Make Up Pouch", 50], ["Makeup Pouch", 50], ["Mana", 50], ["Mana Cosmetics", 50], ["MARK ANKLE SUPPORT SBT 2525", 50], ["MARK DOCTOR COAT", 50], ["MARK KNEE BRACE SPORT CARE SHUTENG NO 81440", 50], ["MARK KNEE SUPPORT", 50], ["MARK KNEE SUPPORT BLUE OCEAN KK-333", 50], ["MARK KNEE SUPPORT BO-222 BLUE OCEAN", 50], ["MARK KNEE SUPPORT HOTIK HT 888", 50], ["MARK KNEE SUPPORT ST 2549 2", 50], ["MARK LAB COAT ML BA 01", 50], ["MARK LUMBER SACRAL BACK SUPPORT BEST MED", 50], ["MARK PALM SUPPORT HOTIK HT 998", 50], ["MARK POSTURE SUPPORT SHUTENG NO 81448", 50], ["MARK PREMIUM SCRUB+OT KIT", 50], ["MARK SURGICAL GOWN", 50], ["MARK WAIST SUPPORT HEAT X K-786", 50], ["MARK WAIST TRIMMER BLUE OCEAN ST 24118", 50], ["MARK WINTER SCRUB PREMIUM", 50], ["Mooyam", 50], ["MR Oral Tooth Brush", 30], ["Mr Oral Tooth Brush", 30], ["Myboon", 75], ["Myboon, Tom Club, K/Sunny,Sisyphus", 0], ["Nuspa Anti Hair Loss Shampoo", 50], ["Nuspa Anti Hair Loss Shampoo & Conditioner", 50], ["Nuspa Hair Mask Mint Oil 300ml", 50], ["Organ Deluxe", 40], ["Recare (RS 25)", 25], ["Recare (RS 50)", 50], ["Recare (RS=25)", 25], ["Recare (RS=50)", 50], ["Recare 25", 25], ["Recare 50", 50], ["Romacy", 50], ["Scenabela", 50], ["Scenabella", 50], ["SILICONE HEEL COVER LT 880", 50], ["Sisyphus", 75], ["Sisyphus (RS=100)", 100], ["Sisyphus (RS=150)", 150], ["Sisyphus (RS=200)", 200], ["Sisyphus (RS=50)", 50], ["Socks", 25], ["Soft Sub Hair Color", 25], ["Softsub Hair Color", 25], ["Softsub Hair Color (RS=70)", 70], ["Sweet Touch", 50], ["Wali's B", 100], ["Wali,s B", 100], ["Walis B", 100], ["Watson", 70], ["Waveparty Hair Spary", 200], ["Yes Now 100", 100], ["Yes Now 120", 120], ["Yes Now 60", 60], ["Yesnow Gel Moist Cleanser", 50], ["Yesnow Gel Scrub 100ml", 25], ["Yesnow Gel Scrub 150ml", 25], ["Yesnow Moist Gel Juicy Peach Cleanser Mens", 50], ["Yesnow Moist Gel Mens Cleanser", 50], ["yesbow moist gel", 50]];
@@ -251,6 +338,18 @@ let activeKey = SHEETS[0].key;
 let state = {};
 let currentTbody = null;
 let currentHasDesc = false;
+let cloudReady = false;
+
+function currentMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function monthLabel(mk) {
+  if (!mk) return '';
+  const [y, m] = mk.split('-');
+  const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return names[parseInt(m,10)-1] + ' ' + y;
+}
 
 SHEETS.forEach(s => {
   state[s.key] = {
@@ -258,7 +357,8 @@ SHEETS.forEach(s => {
     title: s.title || '',
     name: s.name || '',
     from: s.from || '',
-    to: s.to || ''
+    to: s.to || '',
+    monthKey: currentMonthKey()
   };
 });
 
@@ -281,6 +381,147 @@ function debounce(fn, delay) {
   };
 }
 
+// ---------------- Supabase cloud sync (month-wise) ----------------
+
+function cloudStatus(msg, isError) {
+  const el = document.getElementById('cloudStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? '#b5484d' : '#2f8f4e';
+}
+
+let isDirty = false;
+function markDirty() {
+  isDirty = true;
+  updateSaveIndicator();
+}
+function updateSaveIndicator() {
+  const el = document.getElementById('saveIndicator');
+  if (!el) return;
+  if (isDirty) {
+    el.textContent = '● Unsaved changes';
+    el.classList.add('dirty');
+  } else {
+    el.textContent = 'All changes saved ✓';
+    el.classList.remove('dirty');
+  }
+}
+
+function timeAgo(iso) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + ' min ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + ' hr' + (hrs > 1 ? 's' : '') + ' ago';
+  const days = Math.floor(hrs / 24);
+  return days + ' day' + (days > 1 ? 's' : '') + ' ago';
+}
+
+function computeSnapshotTotal(rows) {
+  return (rows || []).reduce((sum, [name, qty]) => {
+    const rate = rateOf(null, name);
+    const q = parseFloat(qty) || 0;
+    return sum + (rate !== null ? q * rate : 0);
+  }, 0);
+}
+
+async function loadItemsFromCloud() {
+  try {
+    const { data, error } = await sb.from('commission_items').select('items').eq('id', 1).maybeSingle();
+    if (error) throw error;
+    if (data && Array.isArray(data.items) && data.items.length) {
+      GLOBAL_ITEMS = data.items;
+    } else {
+      await saveItemsToCloud(); // seed the cloud row from local defaults the first time
+    }
+  } catch (err) {
+    console.error('loadItemsFromCloud failed', err);
+  }
+}
+
+const saveItemsToCloud = debounce(async function() {
+  try {
+    cloudStatus('Saving items list...');
+    const { error } = await sb.from('commission_items')
+      .upsert({ id: 1, items: GLOBAL_ITEMS, updated_at: new Date().toISOString() });
+    if (error) throw error;
+    cloudStatus('Items list saved to cloud ✓');
+  } catch (err) {
+    console.error('saveItemsToCloud failed', err);
+    cloudStatus('Save failed: ' + (err.message || err), true);
+  }
+}, 800);
+
+async function loadMonth(key, monthKey) {
+  cloudStatus('Loading ' + monthLabel(monthKey) + '...');
+  try {
+    const { data, error } = await sb.from('commission_sheets')
+      .select('data').eq('sheet_key', key).eq('month_key', monthKey).maybeSingle();
+    if (error) throw error;
+    const orig = getConfig(key);
+    if (data && data.data) {
+      state[key] = { ...data.data, monthKey };
+      cloudStatus('Loaded ' + monthLabel(monthKey) + ' from cloud ✓');
+    } else {
+      // no saved data for this month yet — start fresh with the item list, qty blank
+      state[key] = {
+        rows: orig.rows.map(r => [r[0], '']),
+        title: orig.title || '',
+        name: orig.name || '',
+        from: '',
+        to: '',
+        monthKey
+      };
+      cloudStatus('New month — nothing saved yet for ' + monthLabel(monthKey));
+    }
+    if (key === activeKey) { isDirty = false; updateSaveIndicator(); }
+  } catch (err) {
+    console.error('loadMonth failed', err);
+    cloudStatus('Load failed: ' + (err.message || err), true);
+  }
+}
+
+const saveMonth = debounce(async function(key) {
+  const st = state[key];
+  if (!st) return;
+  try {
+    cloudStatus('Saving...');
+    const payload = { rows: st.rows, title: st.title, name: st.name, from: st.from, to: st.to };
+    const { error } = await sb.from('commission_sheets').upsert({
+      sheet_key: key,
+      month_key: st.monthKey,
+      data: payload,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'sheet_key,month_key' });
+    if (error) throw error;
+    cloudStatus('Saved to cloud ✓ (' + monthLabel(st.monthKey) + ')');
+    if (key === activeKey) { isDirty = false; updateSaveIndicator(); }
+  } catch (err) {
+    console.error('saveMonth failed', err);
+    cloudStatus('Save failed: ' + (err.message || err), true);
+  }
+}, 1200);
+
+async function populateMonthHistory(key) {
+  const sel = document.getElementById('monthHistory');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Load a saved month...</option>';
+  try {
+    const { data, error } = await sb.from('commission_sheets')
+      .select('month_key').eq('sheet_key', key).order('month_key', { ascending: false });
+    if (error) throw error;
+    (data || []).forEach(row => {
+      const opt = document.createElement('option');
+      opt.value = row.month_key;
+      opt.textContent = monthLabel(row.month_key);
+      sel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error('populateMonthHistory failed', err);
+  }
+}
+
 function renderTabs() {
   const tabs = document.getElementById('tabs');
   tabs.innerHTML = '';
@@ -288,7 +529,14 @@ function renderTabs() {
     const btn = document.createElement('button');
     btn.className = 'tab-btn' + (s.key === activeKey ? ' active' : '');
     btn.textContent = s.name || s.key;
-    btn.addEventListener('click', () => { activeKey = s.key; renderTabs(); renderSheet(); });
+    btn.addEventListener('click', async () => {
+      if (s.key === activeKey) return;
+      saveMonth(activeKey); // flush any pending edits on the sheet we're leaving
+      activeKey = s.key;
+      renderTabs();
+      await loadMonth(activeKey, state[activeKey].monthKey);
+      renderSheet();
+    });
     tabs.appendChild(btn);
   });
 }
@@ -307,6 +555,12 @@ function renderSheet() {
     <div class="dates">
       <input class="hdr-input hdr-date" id="hdrFrom" value="${escapeHtml(st.from)}">
       <input class="hdr-input hdr-date right" id="hdrTo" value="${escapeHtml(st.to)}">
+    </div>
+    <div class="month-bar">
+      <label for="monthPicker">Month:</label>
+      <input type="month" id="monthPicker" value="${escapeHtml(st.monthKey)}">
+      <select id="monthHistory"><option value="">Load a saved month...</option></select>
+      <span id="cloudStatus" class="cloud-status"></span>
     </div>
     <div class="sheet-inner">
     <table id="mainTable">
@@ -353,7 +607,7 @@ function renderSheet() {
   st.rows.forEach(([name, qty]) => addRowEl(tbody, name, qty, hasDesc));
   recalc();
 
-  document.getElementById('addRowBtn').addEventListener('click', () => { const nt = addRowEl(tbody, '', '', hasDesc); recalc(); nt.querySelector('.itemInput').focus(); });
+  document.getElementById('addRowBtn').addEventListener('click', () => { const nt = addRowEl(tbody, '', '', hasDesc); recalc(); markDirty(); nt.querySelector('.itemInput').focus(); });
   document.getElementById('printBtn').addEventListener('click', () => window.print());
   document.getElementById('resetBtn').addEventListener('click', () => {
     const orig = getConfig(activeKey);
@@ -363,6 +617,7 @@ function renderSheet() {
     state[activeKey].from = orig.from || '';
     state[activeKey].to = orig.to || '';
     renderSheet();
+    markDirty();
   });
   document.getElementById('addItemBtn').addEventListener('click', () => {
     document.getElementById('newItemName').value = '';
@@ -371,10 +626,26 @@ function renderSheet() {
     document.getElementById('itemModal').classList.add('show');
   });
 
-  document.getElementById('hdrTitle').addEventListener('input', e => state[activeKey].title = e.target.value);
-  document.getElementById('hdrName').addEventListener('input', e => state[activeKey].name = e.target.value);
-  document.getElementById('hdrFrom').addEventListener('input', e => state[activeKey].from = e.target.value);
-  document.getElementById('hdrTo').addEventListener('input', e => state[activeKey].to = e.target.value);
+  document.getElementById('hdrTitle').addEventListener('input', e => { state[activeKey].title = e.target.value; markDirty(); });
+  document.getElementById('hdrName').addEventListener('input', e => { state[activeKey].name = e.target.value; markDirty(); });
+  document.getElementById('hdrFrom').addEventListener('input', e => { state[activeKey].from = e.target.value; markDirty(); });
+  document.getElementById('hdrTo').addEventListener('input', e => { state[activeKey].to = e.target.value; markDirty(); });
+
+  document.getElementById('monthPicker').addEventListener('change', async e => {
+    const newMonth = e.target.value;
+    if (!newMonth) return;
+    saveMonth(activeKey); // flush current month before switching
+    await loadMonth(activeKey, newMonth);
+    renderSheet();
+  });
+  document.getElementById('monthHistory').addEventListener('change', async e => {
+    const pick = e.target.value;
+    if (!pick) return;
+    saveMonth(activeKey);
+    await loadMonth(activeKey, pick);
+    renderSheet();
+  });
+  populateMonthHistory(activeKey);
 }
 
 function highlightMatch(name, query) {
@@ -427,6 +698,7 @@ function addRowEl(tbody, itemName, qty, hasDesc) {
           itemInput.value = el.getAttribute('data-name');
           suggestBox.classList.remove('show');
           recalc();
+          markDirty();
         });
       });
     }
@@ -438,6 +710,7 @@ function addRowEl(tbody, itemName, qty, hasDesc) {
   itemInput.addEventListener('input', e => {
     debouncedSearch(e.target.value);
     recalc();
+    markDirty();
   });
   itemInput.addEventListener('focus', e => {
     if (e.target.value) debouncedSearch(e.target.value);
@@ -453,6 +726,7 @@ function addRowEl(tbody, itemName, qty, hasDesc) {
         if (hlIndex >= 0) { itemInput.value = items[hlIndex].getAttribute('data-name'); }
         suggestBox.classList.remove('show');
         recalc();
+        markDirty();
         tr.querySelector('.qtyInput').focus();
         return;
       }
@@ -465,16 +739,17 @@ function addRowEl(tbody, itemName, qty, hasDesc) {
   itemInput.addEventListener('blur', () => { setTimeout(() => suggestBox.classList.remove('show'), 150); });
 
   const qtyInput = tr.querySelector('.qtyInput');
-  qtyInput.addEventListener('input', recalc);
+  qtyInput.addEventListener('input', () => { recalc(); markDirty(); });
   qtyInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
       const newRow = addRowEl(currentTbody, '', '', currentHasDesc);
       recalc();
+      markDirty();
       newRow.querySelector('.itemInput').focus();
     }
   });
-  tr.querySelector('.rm-btn').addEventListener('click', () => { tr.remove(); recalc(); });
+  tr.querySelector('.rm-btn').addEventListener('click', () => { tr.remove(); recalc(); markDirty(); });
   return tr;
 }
 
@@ -500,6 +775,12 @@ function recalc() {
   document.getElementById('totalQty').textContent = totalQty;
   document.getElementById('totalAmount').textContent = totalAmount;
   document.getElementById('totalComm').textContent = totalAmount;
+
+  // keep state.rows in sync with the DOM (local memory only — cloud save happens on Save click)
+  state[activeKey].rows = [...tbody.children].map(tr => [
+    tr.querySelector('.itemInput').value,
+    tr.querySelector('.qtyInput').value
+  ]);
 }
 
 function renderItemsList() {
@@ -537,18 +818,21 @@ function renderItemsList() {
         s.rows.forEach(r => { if (norm(r[0]) === norm(oldName)) r[0] = newName; });
       });
       recalc();
+      saveItemsToCloud();
     });
     rateInput.addEventListener('change', () => {
       const newRate = parseFloat(rateInput.value);
       if (isNaN(newRate)) { rateInput.value = items[i][1]; return; }
       GLOBAL_ITEMS[i][1] = newRate;
       recalc();
+      saveItemsToCloud();
     });
     row.querySelector('.item-del-btn').addEventListener('click', () => {
       if (!confirm(`"${items[i][0]}" ko sab sheets se hata dein?`)) return;
       GLOBAL_ITEMS.splice(i, 1);
       renderItemsList();
       recalc();
+      saveItemsToCloud();
     });
   });
 }
@@ -564,10 +848,17 @@ document.getElementById('saveItemBtn').addEventListener('click', () => {
   document.getElementById('newItemRate').value = '';
   renderItemsList();
   recalc();
+  saveItemsToCloud();
 });
 
-renderTabs();
-renderSheet();
+async function initApp() {
+  cloudStatus('Connecting to cloud...');
+  await loadItemsFromCloud();
+  await loadMonth(activeKey, state[activeKey].monthKey);
+  renderTabs();
+  renderSheet();
+}
+initApp();
 
 document.addEventListener('keydown', e => {
   if (e.ctrlKey && e.key.toLowerCase() === 'i') {
@@ -586,6 +877,119 @@ function showStatus(msg) {
   el.textContent = msg;
   setTimeout(() => { if (el.textContent === msg) el.textContent = ''; }, 4000);
 }
+
+document.getElementById('saveAllBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('saveAllBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  showStatus('Saara data database mein bhej rahe hain...');
+  try {
+    // 1) push the shared item/rate catalog
+    const { error: itemsErr } = await sb.from('commission_items')
+      .upsert({ id: 1, items: GLOBAL_ITEMS, updated_at: new Date().toISOString() });
+    if (itemsErr) throw itemsErr;
+
+    // 2) push every sheet currently in memory (all employee tabs, not just the open one)
+    if (currentTbody) {
+      state[activeKey].rows = [...currentTbody.children].map(tr => [
+        tr.querySelector('.itemInput').value,
+        tr.querySelector('.qtyInput').value
+      ]);
+    }
+    const rowsToUpsert = Object.entries(state).map(([key, st]) => ({
+      sheet_key: key,
+      month_key: st.monthKey,
+      data: { rows: st.rows, title: st.title, name: st.name, from: st.from, to: st.to },
+      updated_at: new Date().toISOString()
+    }));
+    const { error: sheetsErr } = await sb.from('commission_sheets')
+      .upsert(rowsToUpsert, { onConflict: 'sheet_key,month_key' });
+    if (sheetsErr) throw sheetsErr;
+
+    showStatus(`Sab ${rowsToUpsert.length} sheets aur items list database mein save ho gaye ✓`);
+    cloudStatus('Saved to database ✓');
+    isDirty = false;
+    updateSaveIndicator();
+    populateMonthHistory(activeKey);
+  } catch (err) {
+    console.error('saveAll failed', err);
+    showStatus('Database mein save karne mein masla hua — dobara koshish karein.');
+    cloudStatus('Save failed: ' + (err.message || err), true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Save';
+  }
+});
+
+// ---------------- History panel: browse everything saved in the database ----------------
+
+let historyRows = [];
+
+async function openHistoryModal() {
+  document.getElementById('historyModal').classList.add('show');
+  document.getElementById('historyFilter').value = '';
+  const listEl = document.getElementById('historyList');
+  listEl.innerHTML = '<div class="history-empty">Loading saved data...</div>';
+  try {
+    const { data, error } = await sb.from('commission_sheets')
+      .select('sheet_key, month_key, data, updated_at')
+      .order('updated_at', { ascending: false });
+    if (error) throw error;
+    historyRows = data || [];
+    renderHistoryList(historyRows);
+  } catch (err) {
+    console.error('openHistoryModal failed', err);
+    listEl.innerHTML = `<div class="history-empty">Load nahi ho saka: ${escapeHtml(err.message || String(err))}</div>`;
+  }
+}
+
+function renderHistoryList(rows) {
+  const listEl = document.getElementById('historyList');
+  if (!rows.length) {
+    listEl.innerHTML = '<div class="history-empty">Abhi tak database mein kuch save nahi hua. "Save" button dabayein.</div>';
+    return;
+  }
+  listEl.innerHTML = rows.map((r, i) => {
+    const cfg = getConfig(r.sheet_key);
+    const empName = (cfg && cfg.name) || r.sheet_key;
+    const total = computeSnapshotTotal(r.data && r.data.rows);
+    return `
+      <div class="history-row" data-i="${i}">
+        <div class="history-info">
+          <div class="hr-name">${escapeHtml(empName)} · ${escapeHtml(monthLabel(r.month_key))}</div>
+          <div class="hr-meta">Rs ${total} total · saved ${timeAgo(r.updated_at)}</div>
+        </div>
+        <button class="history-open-btn" data-i="${i}">Open</button>
+      </div>
+    `;
+  }).join('');
+  [...listEl.querySelectorAll('.history-open-btn')].forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const r = rows[parseInt(btn.getAttribute('data-i'), 10)];
+      if (isDirty && !confirm('Aapke unsaved changes hain jo save nahi honge. Continue karein?')) return;
+      activeKey = r.sheet_key;
+      state[r.sheet_key] = { ...r.data, monthKey: r.month_key };
+      isDirty = false;
+      updateSaveIndicator();
+      document.getElementById('historyModal').classList.remove('show');
+      renderTabs();
+      renderSheet();
+    });
+  });
+}
+
+document.getElementById('historyBtn').addEventListener('click', openHistoryModal);
+document.getElementById('closeHistoryBtn').addEventListener('click', () => document.getElementById('historyModal').classList.remove('show'));
+document.getElementById('historyFilter').addEventListener('input', e => {
+  const q = norm(e.target.value);
+  if (!q) { renderHistoryList(historyRows); return; }
+  const filtered = historyRows.filter(r => {
+    const cfg = getConfig(r.sheet_key);
+    const empName = norm((cfg && cfg.name) || r.sheet_key);
+    return empName.includes(q) || norm(monthLabel(r.month_key)).includes(q);
+  });
+  renderHistoryList(filtered);
+});
 
 document.getElementById('saveDataBtn').addEventListener('click', () => {
   const payload = { savedAt: new Date().toISOString(), state: state, globalItems: GLOBAL_ITEMS };
