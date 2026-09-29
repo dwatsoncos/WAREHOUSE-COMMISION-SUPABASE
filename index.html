@@ -45,6 +45,13 @@
   .topbar .brand { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
   .topbar .brand span { display: block; font-weight: 400; font-size: 11.5px; color: #cfe3d8; margin-top: 1px; }
   .topbar .right { display: flex; align-items: center; gap: 10px; }
+  .mode-switch { display: flex; gap: 4px; background: rgba(255,255,255,0.12); padding: 4px; border-radius: 999px; }
+  .mode-btn {
+    font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600;
+    padding: 7px 14px; border: none; border-radius: 999px; cursor: pointer;
+    background: transparent; color: #cfe3d8;
+  }
+  .mode-btn.active { background: #fff; color: var(--pine-dark); }
   .save-indicator { font-family: 'Inter', sans-serif; font-size: 12px; color: #cfe3d8; white-space: nowrap; }
   .save-indicator.dirty { color: #ffd98a; }
   .btn { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 7px; border: none; cursor: pointer; }
@@ -251,6 +258,52 @@
     margin-bottom: 6px;
     min-height: 16px;
   }
+  /* Rent Receipt module */
+  .rent-form-wrap { padding: 22px 24px 6px; font-family: 'Inter', sans-serif; }
+  .rent-title {
+    text-align: center; font-size: 20px; font-weight: 700; color: var(--pine-dark);
+    letter-spacing: 0.5px; margin: 0 0 18px 0;
+  }
+  .rent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+  .rf { display: flex; flex-direction: column; gap: 5px; }
+  .rf-wide { grid-column: 1 / -1; }
+  .rf label { font-size: 11.5px; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: 0.3px; }
+  .rf input, .rf select {
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-family: 'Inter', sans-serif; font-size: 13.5px; background: #fff; color: var(--ink);
+  }
+  .rf input:disabled { background: var(--pine-light); color: var(--pine-dark); font-weight: 600; }
+  .rf input:focus, .rf select:focus { outline: 2px solid #a9c9ba; }
+
+  #rentPrintArea { display: none; }
+  .rcopy { border: 1.5pt solid #000; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; margin-bottom: 16px; }
+  .rcopy-topline { display: flex; justify-content: space-between; align-items: flex-start; }
+  .rcopy-band { background: #000; color: #fff; font-size: 19px; font-weight: 800; padding: 9px 16px; letter-spacing: 0.4px; }
+  .rcopy-topright { padding: 8px 14px 0 0; text-align: right; font-size: 12px; }
+  .rcopy-topright div { margin-bottom: 4px; }
+  .rcopy-topright b { margin-right: 6px; }
+  .rcopy-body { padding: 12px 18px 4px; }
+  .rcopy-main { display: grid; grid-template-columns: 1fr 1fr; column-gap: 26px; row-gap: 6px; font-size: 12.5px; }
+  .rc-full { grid-column: 1 / -1; font-weight: 700; margin: 2px 0 6px; }
+  .rc-row b { margin-right: 6px; }
+  .fillline { border-bottom: 1px solid #333; padding: 0 4px 1px; min-width: 90px; display: inline-block; }
+  .fillline.wide { min-width: 150px; }
+  .fillline.short { min-width: 46px; }
+  .rc-words { font-style: italic; margin: 2px 0 6px 2px; }
+  .rc-kv { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .rc-net .fillline { background: #ccc; font-weight: 700; }
+  .rc-dates { margin-top: 2px; }
+  .rc-dates span { border-bottom: 1px solid #333; padding: 0 6px; }
+  .rc-checks { margin-top: 2px; }
+  .rc-checks label { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 4px; }
+  .chk { width: 10px; height: 10px; border: 1px solid #000; display: inline-block; flex-shrink: 0; }
+  .chk.filled { background: #000; }
+  .rc-sign { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; }
+  .sign-line { border-top: 1px solid #000; width: 150px; margin-top: 22px; }
+  .sign-label { font-size: 10.5px; margin-top: 2px; }
+  .rcopy-footer { display: flex; justify-content: space-between; padding: 4px 16px 9px; font-size: 9px; }
+  .rcopy-thanks { font-style: italic; }
+
   #historyFilter { margin-bottom: 10px; }
   .history-list { overflow-y: auto; flex: 1; border: 1px solid #e2e6ea; border-radius: 6px; }
   .history-row {
@@ -357,6 +410,13 @@
       position: relative; z-index: 1;
     }
     .sign::before { border-top-color: #163f30; }
+
+    /* Rent receipt printing: hide the editable form, show the two-copy print layout */
+    .rent-form-wrap, #rentSection .actions { display: none !important; }
+    #rentPrintArea { display: block !important; }
+    #rentSheet { box-shadow: none; border: none; }
+    .rcopy { page-break-inside: avoid; }
+    .rcopy + .rcopy { border-top: 1.5pt dashed #9fb8ac; margin-top: 18px; padding-top: 22px; }
   }
 </style>
 </head>
@@ -364,6 +424,10 @@
 
 <div class="topbar ui">
   <div class="brand">D.WATSON PWD<span>Item-wise commission book</span></div>
+  <div class="mode-switch">
+    <button class="mode-btn active" id="modeCommissionBtn">🧾 Commission Sheets</button>
+    <button class="mode-btn" id="modeRentBtn">🏠 Rent Receipt</button>
+  </div>
   <div class="right">
     <span class="save-indicator" id="saveIndicator">All changes saved</span>
     <button class="btn btn-ghost" id="historyBtn">🕘 History</button>
@@ -371,7 +435,7 @@
   </div>
 </div>
 
-<div class="wrap">
+<div class="wrap" id="commissionSection">
   <div class="tabs" id="tabs"></div>
   <div class="sheet" id="sheetContainer"></div>
   <div class="actions" style="margin-top:10px;">
@@ -380,6 +444,83 @@
     <input type="file" id="loadFileInput" accept=".json" style="display:none;">
   </div>
   <div class="save-status" id="saveStatus"></div>
+</div>
+
+<div class="wrap" id="rentSection" style="display:none;">
+  <div class="sheet" id="rentSheet">
+    <div class="rent-form-wrap">
+      <h2 class="rent-title">RENT RECEIPT</h2>
+      <div class="rent-grid">
+        <div class="rf">
+          <label>Receipt No.</label>
+          <input type="number" id="rReceiptNo" value="1">
+        </div>
+        <div class="rf">
+          <label>Date</label>
+          <input type="date" id="rDate">
+        </div>
+        <div class="rf rf-wide">
+          <label>Received From</label>
+          <input type="text" id="rFrom" value="D.Watson Pharmacy">
+        </div>
+        <div class="rf rf-wide">
+          <label>Property Address</label>
+          <input type="text" id="rAddress" value="HOUSE#30 CIRCULAR ROAD PAK-TOWN PHASE II">
+        </div>
+        <div class="rf rf-wide">
+          <label>For the Period (description)</label>
+          <input type="text" id="rPeriodDesc" value="STAFF FLAT RENT">
+        </div>
+        <div class="rf">
+          <label>Period From</label>
+          <input type="date" id="rPeriodFrom">
+        </div>
+        <div class="rf">
+          <label>Period To</label>
+          <input type="date" id="rPeriodTo">
+        </div>
+        <div class="rf">
+          <label>Sum Amount (Rs)</label>
+          <input type="number" id="rSum" value="0">
+        </div>
+        <div class="rf">
+          <label>WHT (Rs)</label>
+          <input type="number" id="rWht" value="0">
+        </div>
+        <div class="rf">
+          <label>Net Paid (Rs)</label>
+          <input type="text" id="rNetPaid" value="0" disabled>
+        </div>
+        <div class="rf rf-wide">
+          <label>The Sum of (words)</label>
+          <input type="text" id="rWords" disabled>
+        </div>
+        <div class="rf">
+          <label>Paid By</label>
+          <select id="rPaidBy">
+            <option>Cash</option>
+            <option>Cheque</option>
+            <option>Money Order</option>
+          </select>
+        </div>
+        <div class="rf" id="rChequeWrap" style="display:none;">
+          <label>Cheque No.</label>
+          <input type="text" id="rChequeNo">
+        </div>
+        <div class="rf rf-wide">
+          <label>Received By (Landlord Name)</label>
+          <input type="text" id="rReceivedBy" value="MUHAMMAD SADDIQUE">
+        </div>
+      </div>
+    </div>
+    <div class="actions" style="margin-top:0;padding-bottom:18px;">
+      <button id="rNewBtn">+ New Receipt</button>
+      <button id="rPrintBtn">Print / PDF</button>
+    </div>
+  </div>
+  <div class="save-status" id="rentSaveStatus"></div>
+
+  <div id="rentPrintArea"></div>
 </div>
 
 <div class="modal-overlay" id="itemModal">
@@ -391,9 +532,11 @@
       <input type="number" id="newItemRate" placeholder="Rate" class="rate-narrow">
       <button id="saveItemBtn">+ Add</button>
     </div>
-    <div class="modal-actions">
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button id="bulkImportBtn" style="background:#3a6ea5;color:#fff;">📥 Bulk Import (JSON)</button>
       <button id="cancelItemBtn">Band Karein</button>
     </div>
+    <input type="file" id="bulkImportFileInput" accept=".json" style="display:none;">
   </div>
 </div>
 
@@ -401,7 +544,7 @@
   <div class="modal-box">
     <h3>Naya Custom Sheet</h3>
     <label for="newSheetName">Employee Name</label>
-    <input type="text" id="newSheetName" placeholder="e.g. MR WASI DEV">
+    <input type="text" id="newSheetName" placeholder="e.g. AHMED RAZA">
     <label for="newSheetMonth">Month</label>
     <input type="month" id="newSheetMonth">
     <div class="modal-actions">
@@ -986,6 +1129,44 @@ function renderItemsList() {
 }
 
 document.getElementById('cancelItemBtn').addEventListener('click', () => document.getElementById('itemModal').classList.remove('show'));
+
+document.getElementById('bulkImportBtn').addEventListener('click', () => document.getElementById('bulkImportFileInput').click());
+document.getElementById('bulkImportFileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    let incoming;
+    try {
+      incoming = JSON.parse(evt.target.result);
+    } catch (err) {
+      alert('Yeh valid JSON file nahi hai.');
+      return;
+    }
+    if (!Array.isArray(incoming)) { alert('JSON file mein ek array hona chahiye: [["Item Name", rate], ...]'); return; }
+
+    let added = 0, updated = 0;
+    incoming.forEach(pair => {
+      if (!Array.isArray(pair) || pair.length < 2) return;
+      const name = String(pair[0]).trim();
+      const rate = parseFloat(pair[1]);
+      if (!name || isNaN(rate)) return;
+      const existing = GLOBAL_ITEMS.find(i => norm(i[0]) === norm(name));
+      if (existing) { existing[1] = rate; updated++; }
+      else { GLOBAL_ITEMS.push([name, rate]); added++; }
+    });
+    GLOBAL_ITEMS.sort((a, b) => a[0].localeCompare(b[0]));
+
+    renderItemsList();
+    recalc();
+    e.target.value = '';
+    showStatus(`Import ho gaya: ${added} naye items, ${updated} rates update hue. Database mein sync ho raha hai...`);
+    saveAllToCloud().then(ok => {
+      if (ok) showStatus(`✓ ${added} naye items add, ${updated} rates update, aur database mein save ho gaye.`);
+    });
+  };
+  reader.readAsText(file);
+});
 document.getElementById('saveItemBtn').addEventListener('click', () => {
   const name = document.getElementById('newItemName').value.trim();
   const rate = parseFloat(document.getElementById('newItemRate').value);
@@ -1034,6 +1215,310 @@ async function loadCustomSheetsFromCloud() {
   }
 }
 
+// ==================== Rent Receipt module ====================
+
+let appMode = 'commission';
+let currentRentId = null; // null = new receipt not yet saved; else editing an existing DB row
+
+function setMode(mode) {
+  appMode = mode;
+  document.getElementById('modeCommissionBtn').classList.toggle('active', mode === 'commission');
+  document.getElementById('modeRentBtn').classList.toggle('active', mode === 'rent');
+  document.getElementById('commissionSection').style.display = mode === 'commission' ? '' : 'none';
+  document.getElementById('rentSection').style.display = mode === 'rent' ? '' : 'none';
+}
+document.getElementById('modeCommissionBtn').addEventListener('click', () => setMode('commission'));
+document.getElementById('modeRentBtn').addEventListener('click', () => setMode('rent'));
+
+function numberToWords(num) {
+  num = Math.round(Math.abs(num || 0));
+  if (num === 0) return 'Zero';
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten',
+    'Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function chunk(n) {
+    let s = '';
+    if (n >= 100) { s += ones[Math.floor(n / 100)] + ' Hundred'; n %= 100; if (n) s += ' '; }
+    if (n >= 20) { s += tens[Math.floor(n / 10)]; if (n % 10) s += '-' + ones[n % 10]; }
+    else if (n > 0) { s += ones[n]; }
+    return s;
+  }
+  const names = ['', 'Thousand', 'Million', 'Billion'];
+  const groups = [];
+  let n = num;
+  while (n > 0) { groups.push(n % 1000); n = Math.floor(n / 1000); }
+  const parts = [];
+  for (let i = groups.length - 1; i >= 0; i--) {
+    if (groups[i] > 0) parts.push(chunk(groups[i]) + (names[i] ? ' ' + names[i] : ''));
+  }
+  return parts.join(' ');
+}
+
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+function recalcRent() {
+  const sum = parseFloat(document.getElementById('rSum').value) || 0;
+  const wht = parseFloat(document.getElementById('rWht').value) || 0;
+  const net = sum - wht;
+  document.getElementById('rNetPaid').value = net;
+  document.getElementById('rWords').value = numberToWords(net);
+}
+['rSum', 'rWht'].forEach(id => document.getElementById(id).addEventListener('input', recalcRent));
+
+document.getElementById('rPaidBy').addEventListener('change', e => {
+  document.getElementById('rChequeWrap').style.display = e.target.value === 'Cheque' ? '' : 'none';
+});
+
+async function loadNextReceiptNo() {
+  try {
+    const { data, error } = await sb.from('rent_receipts')
+      .select('receipt_no').order('receipt_no', { ascending: false }).limit(1).maybeSingle();
+    if (error) throw error;
+    document.getElementById('rReceiptNo').value = data ? data.receipt_no + 1 : 1;
+  } catch (err) {
+    console.error('loadNextReceiptNo failed', err);
+  }
+}
+
+function resetRentForm(keepRecurring) {
+  currentRentId = null;
+  document.getElementById('rDate').value = todayISO();
+  document.getElementById('rPeriodFrom').value = '';
+  document.getElementById('rPeriodTo').value = '';
+  document.getElementById('rSum').value = 0;
+  document.getElementById('rWht').value = 0;
+  document.getElementById('rChequeNo').value = '';
+  document.getElementById('rPaidBy').value = 'Cash';
+  document.getElementById('rChequeWrap').style.display = 'none';
+  if (!keepRecurring) {
+    document.getElementById('rFrom').value = 'D.Watson Pharmacy';
+    document.getElementById('rAddress').value = 'HOUSE#30 CIRCULAR ROAD PAK-TOWN PHASE II';
+    document.getElementById('rPeriodDesc').value = 'STAFF FLAT RENT';
+    document.getElementById('rReceivedBy').value = 'MUHAMMAD SADDIQUE';
+  }
+  recalcRent();
+}
+
+document.getElementById('rNewBtn').addEventListener('click', async () => {
+  resetRentForm(true);
+  await loadNextReceiptNo();
+});
+
+function rentPayload() {
+  return {
+    receipt_no: parseInt(document.getElementById('rReceiptNo').value, 10) || 1,
+    receipt_date: document.getElementById('rDate').value || todayISO(),
+    received_from: document.getElementById('rFrom').value,
+    property_address: document.getElementById('rAddress').value,
+    period_desc: document.getElementById('rPeriodDesc').value,
+    period_from: document.getElementById('rPeriodFrom').value || null,
+    period_to: document.getElementById('rPeriodTo').value || null,
+    sum_amount: parseFloat(document.getElementById('rSum').value) || 0,
+    wht: parseFloat(document.getElementById('rWht').value) || 0,
+    paid_by: document.getElementById('rPaidBy').value,
+    cheque_no: document.getElementById('rChequeNo').value || null,
+    received_by: document.getElementById('rReceivedBy').value,
+    updated_at: new Date().toISOString()
+  };
+}
+
+async function saveRentReceipt() {
+  const btn = document.getElementById('saveAllBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const statusEl = document.getElementById('rentSaveStatus');
+  statusEl.textContent = 'Database mein save ho raha hai...';
+  try {
+    const payload = rentPayload();
+    let error;
+    if (currentRentId) {
+      ({ error } = await sb.from('rent_receipts').update(payload).eq('id', currentRentId));
+    } else {
+      const res = await sb.from('rent_receipts').insert(payload).select('id').single();
+      error = res.error;
+      if (!error) currentRentId = res.data.id;
+    }
+    if (error) throw error;
+    statusEl.textContent = `✓ Receipt #${payload.receipt_no} database mein save ho gaya.`;
+    isDirty = false;
+    updateSaveIndicator();
+  } catch (err) {
+    console.error('saveRentReceipt failed', err);
+    statusEl.textContent = 'Save failed: ' + (err.message || err);
+  } finally {
+    btn.disabled = false; btn.textContent = '💾 Save';
+  }
+}
+
+function formatLongDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+function formatShortDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return iso;
+  return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+}
+function checkboxHtml(optionValue, currentValue) {
+  return `<span class="chk${optionValue === currentValue ? ' filled' : ''}"></span>`;
+}
+
+function buildRentCopyHTML(label) {
+  const receiptNo = document.getElementById('rReceiptNo').value;
+  const date = document.getElementById('rDate').value;
+  const from = document.getElementById('rFrom').value;
+  const address = document.getElementById('rAddress').value;
+  const periodDesc = document.getElementById('rPeriodDesc').value;
+  const periodFrom = document.getElementById('rPeriodFrom').value;
+  const periodTo = document.getElementById('rPeriodTo').value;
+  const sum = parseFloat(document.getElementById('rSum').value) || 0;
+  const wht = parseFloat(document.getElementById('rWht').value) || 0;
+  const net = sum - wht;
+  const words = numberToWords(net);
+  const paidBy = document.getElementById('rPaidBy').value;
+  const chequeNo = document.getElementById('rChequeNo').value;
+  const receivedBy = document.getElementById('rReceivedBy').value;
+
+  return `
+    <div class="rcopy">
+      <div class="rcopy-topline">
+        <div class="rcopy-band">RENT RECEIPT</div>
+        <div class="rcopy-topright">
+          <div><b>Date</b> <span class="fillline">${escapeHtml(formatLongDate(date))}</span></div>
+          <div><b>No.</b> <span class="fillline short">${escapeHtml(String(receiptNo))}</span></div>
+        </div>
+      </div>
+      <div class="rcopy-body">
+        <div class="rcopy-main">
+          <div class="rc-left">
+            <div class="rc-row"><b>Received from</b> <span class="fillline wide">${escapeHtml(from)}</span></div>
+            <div class="rc-words">${escapeHtml(words)}</div>
+          </div>
+          <div class="rc-right">
+            <div class="rc-kv"><b>The Sum of</b><span class="fillline">${net.toLocaleString()}</span></div>
+            <div class="rc-kv"><b>WHT</b><span class="fillline">${wht.toLocaleString()}</span></div>
+            <div class="rc-kv rc-net"><b>Net Paid</b><span class="fillline">${net.toLocaleString()}</span></div>
+          </div>
+
+          <div class="rc-full">${escapeHtml(address)}</div>
+
+          <div class="rc-left">
+            <div class="rc-row"><b>For the Period</b> <span class="fillline wide">${escapeHtml(periodDesc)}</span></div>
+            <div class="rc-dates"><span>${escapeHtml(formatShortDate(periodFrom))}</span> to <span>${escapeHtml(formatShortDate(periodTo))}</span></div>
+          </div>
+          <div class="rc-right">
+            <div class="rc-row"><b>Paid by</b></div>
+            <div class="rc-checks">
+              <label>${checkboxHtml('Cheque', paidBy)} Cheque No. <span class="fillline short">${paidBy === 'Cheque' ? escapeHtml(chequeNo) : ''}</span></label>
+              <label>${checkboxHtml('Cash', paidBy)} Cash</label>
+              <label>${checkboxHtml('Money Order', paidBy)} Money Order</label>
+            </div>
+          </div>
+
+          <div class="rc-left">
+            <div class="rc-row"><b>Received by</b></div>
+            <div class="rc-words">${escapeHtml(receivedBy)}</div>
+          </div>
+          <div class="rc-right rc-sign">
+            <div class="sign-line"></div>
+            <div class="sign-label">Landlord Signature</div>
+          </div>
+        </div>
+      </div>
+      <div class="rcopy-footer">
+        <span class="rcopy-copylabel">${escapeHtml(label)}</span>
+        <span class="rcopy-thanks">Thank you!</span>
+      </div>
+    </div>
+  `;
+}
+
+document.getElementById('rPrintBtn').addEventListener('click', () => {
+  document.getElementById('rentPrintArea').innerHTML =
+    buildRentCopyHTML("D.WATSON COPY") + buildRentCopyHTML("LANDLORD'S COPY");
+  window.print();
+});
+
+// ---------------- Rent receipt history ----------------
+
+let rentHistoryRows = [];
+
+async function openRentHistory() {
+  document.getElementById('historyModal').classList.add('show');
+  document.getElementById('historyFilter').value = '';
+  const listEl = document.getElementById('historyList');
+  listEl.innerHTML = '<div class="history-empty">Loading saved receipts...</div>';
+  try {
+    const { data, error } = await sb.from('rent_receipts').select('*').order('receipt_no', { ascending: false });
+    if (error) throw error;
+    rentHistoryRows = data || [];
+    renderRentHistoryList(rentHistoryRows);
+  } catch (err) {
+    console.error('openRentHistory failed', err);
+    listEl.innerHTML = `<div class="history-empty">Load nahi ho saka: ${escapeHtml(err.message || String(err))}</div>`;
+  }
+}
+
+function renderRentHistoryList(rows) {
+  const listEl = document.getElementById('historyList');
+  if (!rows.length) {
+    listEl.innerHTML = '<div class="history-empty">Abhi tak koi receipt save nahi hui.</div>';
+    return;
+  }
+  listEl.innerHTML = rows.map((r, i) => `
+    <div class="history-row" data-i="${i}">
+      <div class="history-info">
+        <div class="hr-name">Receipt #${r.receipt_no} · ${escapeHtml(r.received_from || '')}</div>
+        <div class="hr-meta">Rs ${Number(r.net_paid).toLocaleString()} net · ${escapeHtml(r.receipt_date)} · saved ${timeAgo(r.updated_at)}</div>
+      </div>
+      <div class="history-btns">
+        <button class="history-open-btn" data-i="${i}">Open</button>
+        <button class="history-del-btn" data-i="${i}" title="Delete from database">🗑</button>
+      </div>
+    </div>
+  `).join('');
+  [...listEl.querySelectorAll('.history-open-btn')].forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = rows[parseInt(btn.getAttribute('data-i'), 10)];
+      currentRentId = r.id;
+      document.getElementById('rReceiptNo').value = r.receipt_no;
+      document.getElementById('rDate').value = r.receipt_date;
+      document.getElementById('rFrom').value = r.received_from || '';
+      document.getElementById('rAddress').value = r.property_address || '';
+      document.getElementById('rPeriodDesc').value = r.period_desc || '';
+      document.getElementById('rPeriodFrom').value = r.period_from || '';
+      document.getElementById('rPeriodTo').value = r.period_to || '';
+      document.getElementById('rSum').value = r.sum_amount;
+      document.getElementById('rWht').value = r.wht;
+      document.getElementById('rPaidBy').value = r.paid_by || 'Cash';
+      document.getElementById('rChequeNo').value = r.cheque_no || '';
+      document.getElementById('rChequeWrap').style.display = r.paid_by === 'Cheque' ? '' : 'none';
+      document.getElementById('rReceivedBy').value = r.received_by || '';
+      recalcRent();
+      document.getElementById('historyModal').classList.remove('show');
+    });
+  });
+  [...listEl.querySelectorAll('.history-del-btn')].forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const r = rows[parseInt(btn.getAttribute('data-i'), 10)];
+      if (!confirm(`Receipt #${r.receipt_no} (${r.received_from || ''}) ko database se hamesha ke liye delete kar dein?`)) return;
+      btn.disabled = true;
+      try {
+        const { error } = await sb.from('rent_receipts').delete().eq('id', r.id);
+        if (error) throw error;
+        rentHistoryRows = rentHistoryRows.filter(x => x.id !== r.id);
+        renderRentHistoryList(rentHistoryRows);
+      } catch (err) {
+        console.error('delete rent receipt failed', err);
+        alert('Delete nahi ho saka: ' + (err.message || err));
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
 async function initApp() {
   cloudStatus('Connecting to cloud...');
   await loadItemsFromCloud();
@@ -1041,6 +1526,8 @@ async function initApp() {
   await loadMonth(activeKey, state[activeKey].monthKey);
   renderTabs();
   renderSheet();
+  resetRentForm(true);
+  await loadNextReceiptNo();
 }
 initApp();
 
@@ -1105,7 +1592,10 @@ async function saveAllToCloud(opts) {
   }
 }
 
-document.getElementById('saveAllBtn').addEventListener('click', () => saveAllToCloud());
+document.getElementById('saveAllBtn').addEventListener('click', () => {
+  if (appMode === 'rent') saveRentReceipt();
+  else saveAllToCloud();
+});
 
 // ---------------- History panel: browse everything saved in the database ----------------
 
@@ -1188,10 +1678,21 @@ function renderHistoryList(rows) {
   });
 }
 
-document.getElementById('historyBtn').addEventListener('click', openHistoryModal);
+document.getElementById('historyBtn').addEventListener('click', () => {
+  if (appMode === 'rent') openRentHistory();
+  else openHistoryModal();
+});
 document.getElementById('closeHistoryBtn').addEventListener('click', () => document.getElementById('historyModal').classList.remove('show'));
 document.getElementById('historyFilter').addEventListener('input', e => {
   const q = norm(e.target.value);
+  if (appMode === 'rent') {
+    if (!q) { renderRentHistoryList(rentHistoryRows); return; }
+    const filtered = rentHistoryRows.filter(r =>
+      norm(r.received_from || '').includes(q) || String(r.receipt_no).includes(q) || norm(r.receipt_date || '').includes(q)
+    );
+    renderRentHistoryList(filtered);
+    return;
+  }
   if (!q) { renderHistoryList(historyRows); return; }
   const filtered = historyRows.filter(r => {
     const cfg = getConfig(r.sheet_key);
